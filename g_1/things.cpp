@@ -13,6 +13,7 @@ QDataStream & operator << (QDataStream &dataStream, const ISerialize& s)
 {
     s.save(dataStream);
     return dataStream;
+
 }
 
 // 重载输入运算符，只能用友元函数

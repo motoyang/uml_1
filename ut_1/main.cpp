@@ -1,3 +1,4 @@
+/*
 #include <iostream>
 #include <list>
 #include "things.h"
@@ -8,6 +9,7 @@
 
 using namespace std;
 using namespace uml;
+*/
 /*
 int main(int argc, char *argv[])
 {
