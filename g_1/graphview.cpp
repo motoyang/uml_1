@@ -18,23 +18,7 @@ GraphView::GraphView()
     setWindowTitle(tr("Graphics test"));
     setBackgroundBrush(QBrush(Qt::lightGray));
 
-    s0->addRect(s0->sceneRect());
-//    s0->addRect(-100, -100, 200, 200);
-    s0->addEllipse(0, 0, 20, 50);
-    s0->addText(tr("this is text in the scene."));
-
-    QPainterPath pp;
-//    pp.addRect(0, 0, 100, 20);
-    QString s = tr("item test这是一个政治的人");
-    QFont f;
-    QFontMetrics fm(f);
-    QRect r = fm.boundingRect(s);
-    pp.addRect(r);
-    pp.addText(0, 0, f, s);
-//    s0->addPath(pp);
-
-    Graph *u3i = new Graph;
-    u3i->setPos(30, -50);
-    u3i->setPath(pp);
-    s0->addItem(u3i);
+    s0->addItem(new Graph(QPoint(0, 0), QSize(30, 30)));
+    s0->addItem(new Graph(QPoint(0, 50), QSize(230, 300)));
+    s0->addItem(new Graph(QPoint(50, 0), QSize(350, 50)));
 }

@@ -1,6 +1,6 @@
 #include <QApplication>
 #include "graphview.h"
-#include "widget.h"
+//#include "widget.h"
 
 int main(int argc, char *argv[])
 {
