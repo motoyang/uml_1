@@ -24,6 +24,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        widget.cpp
+        widget.cpp \
+    graph.cpp \
+    graphview.cpp
 
-HEADERS  += widget.h
+HEADERS  += widget.h \
+    graph.h \
+    graphview.h
