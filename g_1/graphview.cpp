@@ -25,7 +25,9 @@ GraphView::GraphView()
 //    i3->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable);
 //    s0->addItem(i3);
 
-    s0->addItem(new Graph(QPoint(0, 0), QSize(30, 30)));
-    s0->addItem(new Graph(QPoint(0, 50), QSize(230, 300)));
-    s0->addItem(new Graph(QPoint(50, 0), QSize(350, 50)));
+    s0->addItem(new GraphClass(QPoint(0, 0), QSize(30, 30), "Class1"));
+    s0->addItem(new GraphClass(QPoint(0, 50), QSize(230, 300), "Classname2"));
+    auto g3 = new GraphClass(QPoint(50, 0), QSize(350, 50), "c2");
+    g3->setBrush(QBrush(Qt::darkGreen));
+    s0->addItem(g3);
 }

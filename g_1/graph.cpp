@@ -6,13 +6,84 @@
 #include <QApplication>
 #include "graph.h"
 
-QSizeF Graph::getSize(const QFont &f, const QString &s) const
+//
+// Graph
+//
+Graph::Graph(const QPointF &p, const QSizeF s)
+    : m_pos(p), m_size(s)
+{
+    setFlag(ItemIsMovable);
+    setFlag(ItemIsSelectable);
+//    setFlag(ItemIsFocusable);
+    setFlag(ItemSendsGeometryChanges);
+    setCacheMode(DeviceCoordinateCache);
+    //    setZValue(-1);
+}
+
+const TextPadding Graph::s_padding = {5.0, 5.0, 5.0, 5.0};
+
+QRectF Graph::boundingRect() const
+{
+    qreal penHalfWidth = pen().widthF() / 2;
+    return QRectF(0 - penHalfWidth, 0 - penHalfWidth, m_size.width()
+                  + penHalfWidth, m_size.height() + penHalfWidth);
+}
+
+QPen Graph::pen() const
+{
+    QVariant v = data(PEN_KEY);
+    if (v.isNull()) {
+        return defaultPen();
+    } else {
+        return v.value<QPen>();
+    }
+}
+
+void Graph::setPen(const QPen &p)
+{
+    setData(PEN_KEY, QVariant(p));
+}
+
+QBrush Graph::brush() const
+{
+    QVariant v = data(BRUSH_KEY);
+    if (v.isNull()) {
+        return defaultBrush();
+    } else {
+        return v.value<QBrush>();
+    }
+}
+
+void Graph::setBrush(const QBrush &b)
+{
+    setData(BRUSH_KEY, QVariant(b));
+}
+
+QFont Graph::font() const
+{
+    QVariant v = data(FONT_KEY);
+    if (v.isNull()) {
+        return defaultFont();
+    } else {
+        return v.value<QFont>();
+    }
+}
+
+void Graph::setFont(const QFont &f)
+{
+    setData(FONT_KEY, QVariant(f));
+}
+
+//
+// GraphClass
+//
+QSizeF GraphClass::getSize(const QFont &f, const QString &s) const
 {
     QFontMetrics fm(f);
     return QSizeF(fm.width(s), fm.height());
 }
 
-QSizeF Graph::getSize(const QFont &f, const QList<QString> &l) const
+QSizeF GraphClass::getSize(const QFont &f, const QList<QString> &l) const
 {
     QFontMetrics fm(f);
     qreal width = 0, height = 0;
@@ -28,10 +99,8 @@ QSizeF Graph::getSize(const QFont &f, const QList<QString> &l) const
     return QSizeF(width, height);
 }
 
-void Graph::init()
+void GraphClass::init()
 {
-    setBrush(QBrush(Qt::darkGreen));
-
     QSizeF szName = getSize(m_font, m_name);
     QSizeF szAttributes = getSize(m_font, m_attributes);
     qreal w = std::max<qreal>(szName.width(), szAttributes.width());
@@ -49,32 +118,44 @@ void Graph::init()
     if (h > m_size.height()) {
         m_size.setHeight(h);
     }
-    m_nameXPos = (m_size.width() - szName.width()) / 2 + s_padding.left + (penWidth / 2);
+    m_nameXPos = (m_size.width() - szName.width()) / 2;
 }
 
-Graph::Graph(const QPointF &p, const QSizeF s)
-    : m_pos(p), m_size(s)
+QPen GraphClass::defaultPen() const
 {
-    setFlag(ItemIsMovable);
-    setFlag(ItemIsSelectable);
-//    setFlag(ItemIsFocusable);
-    setFlag(ItemSendsGeometryChanges);
-    setCacheMode(DeviceCoordinateCache);
-    //    setZValue(-1);
+    static QPen p(Qt::darkBlue);
+    return p;
+}
 
-    m_name = "classname1";
+QBrush GraphClass::defaultBrush() const
+{
+    static QBrush b(Qt::darkYellow);
+    return b;
+}
+
+QFont GraphClass::defaultFont() const
+{
+    return qApp->font();
+}
+
+GraphClass::GraphClass(const QPointF &p, const QSizeF s, const QString& name)
+    : Graph(p, s), m_c(name)
+{
+    m_name = m_c.name;
     m_attributes << "-attribute1: float" << "+att2" << "a3: string = abc" << "a4";
     m_operations << "#operation1(p1: int=3, p2: string)" << "+operation2()" << "-op3(p4: double)";
 
     init();
 }
 
-TextPadding Graph::s_padding = {5.0, 5.0, 5.0, 5.0};
-
-void Graph::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
+
+    painter->setPen(pen());
+    painter->setBrush(brush());
+    painter->setFont(font());
 
     QPen p = painter->pen();
     qreal halfWidthPen = p.widthF() / 2;
@@ -107,11 +188,4 @@ void Graph::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
         painter->drawText(x, y, s);
         y+= fm.lineSpacing();
     }
-}
-
-QRectF Graph::boundingRect() const
-{
-    qreal penHalfWidth = pen().widthF() / 2;
-    return QRectF(0 - penHalfWidth, 0 - penHalfWidth, m_size.width()
-                  + penHalfWidth, m_size.height() + penHalfWidth);
 }
