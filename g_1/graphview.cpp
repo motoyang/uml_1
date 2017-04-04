@@ -18,7 +18,14 @@ GraphView::GraphView()
     setWindowTitle(tr("Graphics test"));
     setBackgroundBrush(QBrush(Qt::lightGray));
 
-    s0->addItem(new Graph(QPoint(0, 0), QSize(30, 30)));
-    s0->addItem(new Graph(QPoint(0, 50), QSize(230, 300)));
-    s0->addItem(new Graph(QPoint(50, 0), QSize(350, 50)));
+//    s0->addItem(new QGraphicsSimpleTextItem("GraphicsSimpleTextItem"));
+
+//    auto i3 = new QGraphicsTextItem("GraphicsTextItem");
+//    i3->setTextInteractionFlags(Qt::TextEditorInteraction);
+//    i3->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable);
+//    s0->addItem(i3);
+
+    s0->addItem(new Graph2(QPoint(0, 0), QSize(30, 30)));
+    s0->addItem(new Graph2(QPoint(0, 50), QSize(230, 300)));
+    s0->addItem(new Graph2(QPoint(50, 0), QSize(350, 50)));
 }
