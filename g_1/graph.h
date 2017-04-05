@@ -12,6 +12,27 @@ struct TextPadding {
     qreal bottom;
 };
 
+class Grip {
+    enum GripType {
+        TOP_GRIP,
+        BOTTOM_GRIP,
+        LEFT_GRIP,
+        RIGHT_GRIP,
+        LEFT_TOP_GRIP,
+        RIGHT_TOP_GRIP,
+        LEFT_BOTTOM_GRIP,
+        RIGHT_BOTTOM_GRIP
+    };
+
+    GripType m_type;
+
+public:
+    Grip(GripType t)
+        : m_type(t)
+    {}
+
+};
+
 class Graph: public QGraphicsItem
 {
     const int PEN_KEY = 1;
@@ -33,8 +54,8 @@ public:
     Graph(const QPointF& p, const QSizeF s);
 
     virtual QRectF boundingRect() const override;
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
-//    template<typename T> T getData(int k) const;
     QPen pen() const;
     void setPen(const QPen& p);
     QBrush brush() const;

@@ -27,9 +27,12 @@ SOURCES += main.cpp\
         widget.cpp \
     graph.cpp \
     graphview.cpp \
-    entity.cpp
+    entity.cpp \
+    fun.cpp \
+    graphscene.cpp
 
 HEADERS  += widget.h \
     graph.h \
     graphview.h \
-    entity.h
+    entity.h \
+    graphscene.h
