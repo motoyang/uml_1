@@ -12,12 +12,14 @@ struct TextPadding {
     qreal bottom;
 };
 
-class Grip {
+struct Grip {
+    static const QSizeF s_size;
+
     enum GripType {
-        TOP_GRIP,
-        BOTTOM_GRIP,
-        LEFT_GRIP,
-        RIGHT_GRIP,
+        TOP_CENTER_GRIP,
+        BOTTOM_CENTER_GRIP,
+        LEFT_CENTER_GRIP,
+        RIGHT_CENTER_GRIP,
         LEFT_TOP_GRIP,
         RIGHT_TOP_GRIP,
         LEFT_BOTTOM_GRIP,
@@ -25,12 +27,15 @@ class Grip {
     };
 
     GripType m_type;
+    QRectF m_rect;
 
-public:
-    Grip(GripType t)
-        : m_type(t)
+    Grip(GripType t, const QRectF& r)
+        : m_type(t), m_rect(r)
     {}
 
+    Qt::CursorShape cursorShape() const;
+//    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+//    HoverEventType hoverChanged(QGraphicsSceneHoverEvent *event);
 };
 
 class Graph: public QGraphicsItem
@@ -45,6 +50,8 @@ protected:
     QPointF m_pos;
     QSizeF m_size;
     QFont m_font;
+    QList<Grip> m_grips;
+    int m_currentGripIndex = -1;
 
     virtual QPen defaultPen() const = 0;
     virtual QBrush defaultBrush() const = 0;
@@ -77,11 +84,25 @@ class GraphClass: public Graph
     QSizeF getSize(const QFont &f, const QString &s) const;
     QSizeF getSize(const QFont& f, const QList<QString>& l) const;
     void init();
+    void bringToTop();
+    void createGrips();
+    void removeGrips();
+    void drawGrips(QPainter *painter) const;
 
 protected:
     virtual QPen defaultPen() const override;
     virtual QBrush defaultBrush() const override;
     virtual QFont defaultFont() const override;
+
+    virtual void focusInEvent(QFocusEvent *event) override;
+    virtual void focusOutEvent(QFocusEvent *event) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+
 
 public:
     GraphClass(const QPointF& p, const QSizeF s, const QString& name);

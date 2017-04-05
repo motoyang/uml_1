@@ -1,10 +1,13 @@
 #include <algorithm>
+#include <QMap>
 #include <QPen>
 #include <QBrush>
 #include <QFontMetrics>
 #include <QPainter>
 #include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
 #include <QApplication>
+#include <QDebug>
 #include "graph.h"
 
 //
@@ -15,10 +18,11 @@ Graph::Graph(const QPointF &p, const QSizeF s)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemIsSelectable);
-//    setFlag(ItemIsFocusable);
+    setFlag(ItemIsFocusable);
     setFlag(ItemSendsGeometryChanges);
     setCacheMode(DeviceCoordinateCache);
-    //    setZValue(-1);
+
+    setZValue(-1);
 }
 
 const TextPadding Graph::s_padding = {5.0, 5.0, 5.0, 5.0};
@@ -138,6 +142,76 @@ void GraphClass::init()
     m_nameXPos = (m_size.width() - szName.width()) / 2;
 }
 
+void GraphClass::bringToTop()
+{
+    QList<QGraphicsItem *> overlapItems = collidingItems();
+
+    qreal zValue = 0;
+    foreach (QGraphicsItem *item, overlapItems) {
+        if (item->zValue() >= zValue)
+            zValue = item->zValue() + 0.1;
+    }
+    setZValue(zValue);
+}
+
+void GraphClass::createGrips()
+{
+    QRectF br = boundingRect();
+    QRectF gr(0.0, 0.0, Grip::s_size.width(), Grip::s_size.height());
+
+    // 左上角的grip
+    QPointF p(br.left(), br.top());
+    gr.moveTopLeft(p);
+    m_grips << Grip(Grip::LEFT_TOP_GRIP, gr);
+
+    // 左边中间的grip
+    p.setY(br.height() / 2 - gr.height() / 2);
+    gr.moveTopLeft(p);
+    m_grips << Grip(Grip::LEFT_CENTER_GRIP, gr);
+
+    // 左下角的grip
+    p.setY(br.height());
+    gr.moveBottomLeft(p);
+    m_grips << Grip(Grip::LEFT_BOTTOM_GRIP, gr);
+
+    // 下边中间的grip
+    p.setX(br.width() / 2 - gr.width() / 2);
+    gr.moveBottomLeft(p);
+    m_grips << Grip(Grip::BOTTOM_CENTER_GRIP, gr);
+
+    // 右下角的grip
+    p.setX(br.width());
+    gr.moveBottomRight(p);
+    m_grips << Grip(Grip::RIGHT_BOTTOM_GRIP, gr);
+
+    // 右边中间的grip
+    p.setY(br.height() / 2 - gr.height() / 2);
+    gr.moveTopRight(p);
+    m_grips << Grip(Grip::RIGHT_CENTER_GRIP, gr);
+
+    // 右上角的grip
+    p.setY(br.top());
+    gr.moveTopRight(p);
+    m_grips << Grip(Grip::RIGHT_TOP_GRIP, gr);
+
+    // 上边中间的grip
+    p.setX(br.width() / 2 - gr.width() / 2);
+    gr.moveTopLeft(p);
+    m_grips << Grip(Grip::TOP_CENTER_GRIP, gr);
+}
+
+void GraphClass::removeGrips()
+{
+    m_grips.clear();
+}
+
+void GraphClass::drawGrips(QPainter *painter) const
+{
+    foreach (const Grip& g, m_grips) {
+        painter->drawRect(g.m_rect);
+    }
+}
+
 QPen GraphClass::defaultPen() const
 {
     static QPen p(Qt::darkBlue);
@@ -153,6 +227,91 @@ QBrush GraphClass::defaultBrush() const
 QFont GraphClass::defaultFont() const
 {
     return qApp->font();
+}
+
+void GraphClass::focusInEvent(QFocusEvent *event)
+{
+    Q_UNUSED(event);
+    qDebug() << m_name << "call focusInEvent";
+
+    setAcceptHoverEvents(true);
+    bringToTop();
+    createGrips();
+}
+
+void GraphClass::focusOutEvent(QFocusEvent *event)
+{
+    Q_UNUSED(event);
+    qDebug() << m_name << "call focusOutEvent";
+
+    removeGrips();
+    setAcceptHoverEvents(false);
+}
+
+void GraphClass::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << m_name << "mousePressEvent, " << event->scenePos() << " - " << event->lastScenePos();
+    Graph::mousePressEvent(event);
+}
+
+void GraphClass::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << m_name << "mouseMoveEvent, " << event->scenePos() << " - " << event->lastScenePos();
+    Graph::mouseMoveEvent(event);
+}
+
+void GraphClass::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << m_name << "mouseReleaseEvent, " << event->scenePos() << " - " << event->lastScenePos();
+    Graph::mouseReleaseEvent(event);
+}
+
+void GraphClass::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    qDebug() << m_name << "hoverEnterEvent, " << event->scenePos() << " - " << event->lastScenePos();
+    setCursor(QCursor(Qt::OpenHandCursor));
+    Graph::hoverMoveEvent(event);
+}
+
+void GraphClass::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    qDebug() << m_name << "hoverLeaveEvent, " << event->scenePos() << " - " << event->lastScenePos();
+
+    m_currentGripIndex = -1;
+    setCursor(QCursor(Qt::ArrowCursor));
+    Graph::hoverLeaveEvent(event);
+}
+
+void GraphClass::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+//    qDebug() << m_name << "hoverMoveEvent, " << event->scenePos() << " - " << event->lastScenePos();
+
+    int i = 0;
+    for (i = 0; i < m_grips.size(); ++i) {
+        const Grip& g = m_grips.at(i);
+        if (g.m_rect.contains(event->pos())) {
+            qDebug() << g.m_rect << "contains " << event->pos() << "i is " << i;
+            break;
+        }
+    }
+
+    if (i >= m_grips.size()) {
+        // 没有在grip中
+        if (m_currentGripIndex < m_grips.size()) {
+            // 原先在的grip中，则退出grip
+            m_currentGripIndex = -1;
+            setCursor(Qt::OpenHandCursor);
+        }
+    } else {
+        // 如果鼠标在grip中
+        if (m_currentGripIndex != i) {
+            m_currentGripIndex = i;
+            qDebug() << "m_currentGripIndex = " << m_currentGripIndex;
+            setCursor(m_grips.at(m_currentGripIndex).cursorShape());
+        }
+    }
+
+    Graph::hoverMoveEvent(event);
 }
 
 GraphClass::GraphClass(const QPointF &p, const QSizeF s, const QString& name)
@@ -205,4 +364,24 @@ void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
         painter->drawText(x, y, s);
         y+= fm.lineSpacing();
     }
+
+    drawGrips(painter);
+}
+
+const QSizeF Grip::s_size = {5, 5};
+
+Qt::CursorShape Grip::cursorShape() const
+{
+    static const QMap<int, Qt::CursorShape> cs = {
+        { Grip::TOP_CENTER_GRIP, Qt::SizeVerCursor },
+        { Grip::BOTTOM_CENTER_GRIP, Qt::SizeVerCursor },
+        { Grip::LEFT_CENTER_GRIP, Qt::SizeHorCursor },
+        { Grip::RIGHT_CENTER_GRIP, Qt::SizeHorCursor },
+        { Grip::LEFT_TOP_GRIP, Qt::SizeFDiagCursor },
+        { Grip::RIGHT_TOP_GRIP, Qt::SizeBDiagCursor },
+        { Grip::LEFT_BOTTOM_GRIP, Qt::SizeBDiagCursor },
+        { Grip::RIGHT_BOTTOM_GRIP, Qt::SizeFDiagCursor }
+    };
+
+    return cs.value(m_type);
 }
