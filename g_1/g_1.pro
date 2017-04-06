@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     graphview.cpp \
     entity.cpp \
     fun.cpp \
-    graphscene.cpp
+    graphscene.cpp \
+    intersected.cpp
 
 HEADERS  += widget.h \
     graph.h \

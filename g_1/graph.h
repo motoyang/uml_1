@@ -34,8 +34,6 @@ struct Grip {
     {}
 
     Qt::CursorShape cursorShape() const;
-//    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-//    HoverEventType hoverChanged(QGraphicsSceneHoverEvent *event);
 };
 
 class Graph: public QGraphicsItem

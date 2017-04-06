@@ -1,6 +1,7 @@
 #include <QPainterPath>
+#include <QtWidgets>
 
-/*
+
 QPainterPath Intersect(const QPainterPath &contour, const QPainterPath &line)
 {
     qreal len = line.length();
@@ -13,27 +14,20 @@ QPainterPath Intersect(const QPainterPath &contour, const QPainterPath &line)
     {
         if(contour.contains(p) && !intersected)
         {
-
             intersected = true;
             inter_path.moveTo(p);
-
-
         }
         else if(!contour.contains(p) && intersected)
         {
-
             inter_path.lineTo(p);
             return inter_path;
         }
-
 
         qreal per = line.percentAtLength(k);
         p = line.pointAtPercent(per);
     }
 }
-*/
 
-#include <QtWidgets>
 
 /*!
     Returns the closest element (position) in \a sourcePath to \a target,
