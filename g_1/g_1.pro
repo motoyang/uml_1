@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = g1
 TEMPLATE = app
 
+CONFIG += c++14
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -30,10 +32,12 @@ SOURCES += main.cpp\
     entity.cpp \
     fun.cpp \
     graphscene.cpp \
-    intersected.cpp
+    intersected.cpp \
+    graphclass.cpp
 
 HEADERS  += widget.h \
     graph.h \
     graphview.h \
     entity.h \
-    graphscene.h
+    graphscene.h \
+    graphclass.h

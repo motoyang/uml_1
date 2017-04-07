@@ -1,7 +1,7 @@
 #include <iostream>
 #include <list>
 #include "doctest/doctest.h"
-#include "things.h"
+#include "../g_1/things.h"
 
 using namespace std;
 //using namespace uml;

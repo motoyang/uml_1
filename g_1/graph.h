@@ -1,7 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <QFont>
 #include <QAbstractGraphicsShapeItem>
 #include "entity.h"
 
@@ -29,11 +28,15 @@ struct Grip {
     GripType m_type;
     QRectF m_rect;
 
-    Grip(GripType t, const QRectF& r)
-        : m_type(t), m_rect(r)
+    Grip(GripType t)
+        : m_type(t), m_rect(0, 0, s_size.width(), s_size.height())
     {}
 
     Qt::CursorShape cursorShape() const;
+    bool shouldChangeYPos() const;
+    bool shouldChangeXPos() const;
+    void pretreateSize(const QSizeF& diff, QSizeF& sz) const;
+
 };
 
 class Graph: public QGraphicsItem
@@ -42,18 +45,33 @@ class Graph: public QGraphicsItem
     const int BRUSH_KEY = 2;
     const int FONT_KEY = 3;
 
+    void bringToTop();
+
 protected:
     static const TextPadding s_padding;
 
-    QPointF m_pos;
-    QSizeF m_size;
-    QFont m_font;
-    QList<Grip> m_grips;
-    int m_currentGripIndex = -1;
+    QSizeF m_size, m_minSize;
+    QList<QSharedPointer<Grip>> m_grips;
+    int m_currentGripIndex = std::numeric_limits<int>::max();
 
-    virtual QPen defaultPen() const = 0;
-    virtual QBrush defaultBrush() const = 0;
-    virtual QFont defaultFont() const = 0;
+    // grip相关的操作，子类可以override或实现这些操作。
+    virtual void createGrips() = 0;
+    virtual void berthGripsAt() = 0;
+    virtual void drawGrips(QPainter *painter) const;
+    virtual void removeGrips();
+    virtual void hoverOnGrip(const QPointF& p);
+    virtual bool isGrippedState() const;
+    virtual void resize(const QSizeF &s);
+
+    // from QGraphicsItem
+    virtual void focusInEvent(QFocusEvent *event) override;
+    virtual void focusOutEvent(QFocusEvent *event) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
 
 public:
     Graph(const QPointF& p, const QSizeF s);
@@ -67,45 +85,6 @@ public:
     void setBrush(const QBrush& b);
     QFont font() const;
     void setFont(const QFont& f);
-};
-
-class GraphClass: public Graph
-{
-    uml::Class m_c;
-
-    QString m_name;
-    QList<QString> m_operations;
-    QList<QString> m_attributes;
-
-    qreal m_nameXPos;
-
-    QSizeF getSize(const QFont &f, const QString &s) const;
-    QSizeF getSize(const QFont& f, const QList<QString>& l) const;
-    void init();
-    void bringToTop();
-    void createGrips();
-    void removeGrips();
-    void drawGrips(QPainter *painter) const;
-
-protected:
-    virtual QPen defaultPen() const override;
-    virtual QBrush defaultBrush() const override;
-    virtual QFont defaultFont() const override;
-
-    virtual void focusInEvent(QFocusEvent *event) override;
-    virtual void focusOutEvent(QFocusEvent *event) override;
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
-    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
-
-public:
-    GraphClass(const QPointF& p, const QSizeF s, const QString& name);
-
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 };
 
 #endif // GRAPH_H

@@ -1,5 +1,6 @@
-#include "graph.h"
 #include "graphview.h"
+#include "graph.h"
+#include "graphclass.h"
 
 GraphView::GraphView()
 {
@@ -29,5 +30,6 @@ GraphView::GraphView()
     s0->addItem(new GraphClass(QPoint(0, 50), QSize(230, 300), "Classname2"));
     auto g3 = new GraphClass(QPoint(50, 0), QSize(350, 50), "c2");
     g3->setBrush(QBrush(Qt::darkGreen));
+    g3->setPen(QPen(QBrush(Qt::black), 3));
     s0->addItem(g3);
 }

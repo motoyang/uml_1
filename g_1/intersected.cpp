@@ -2,9 +2,10 @@
 #include <QDebug>
 
 //
-// 找出path与contour相交的多个交点，方向是从path的起始点到终点，不包括path的起始点和终点
+// 找出path与contour相交的多个交点，方向是从path的起始点到终点，不包括path的起始点和终点。
+// 这个函数可以找出准确的交点，但是执行效率太低，使用时要关注执行效率。
 //
-void Intersected(const QPainterPath &contour, const QPainterPath &path, QList<QPointF> &points)
+void Intersected(const QPainterPath &path, const QPainterPath &contour, QList<QPointF> &points)
 {
     qreal len = path.length();
     QPointF p = path.pointAtPercent(0);
@@ -39,8 +40,9 @@ void Intersected(const QPainterPath &contour, const QPainterPath &path, QList<QP
 
 //
 // 找出path与contour相交的path（实际是多个line相连），方向是从path的起始点到终点，包括path的起始点和终点
+// 这个函数可以找出准确的交点，但是执行效率太低，使用时要关注执行效率。
 //
-QPainterPath Intersected(const QPainterPath &contour, const QPainterPath &line)
+QPainterPath Intersected(const QPainterPath &line, const QPainterPath &contour)
 {
     qreal len = line.length();
     QPointF p = line.pointAtPercent(0);
@@ -59,7 +61,7 @@ QPainterPath Intersected(const QPainterPath &contour, const QPainterPath &line)
                 inter_path.lineTo(p);
             }
         }
-        else if(!contour.contains(p) && intersected)
+        if(!contour.contains(p) && intersected)
         {
             intersected = false;
             inter_path.lineTo(pLast);
@@ -121,6 +123,7 @@ QPointF farthestPoint(const QPointF &target, const QPainterPath &sourcePath)
 
 //
 // 找出line与contour相交的第一个交点，方向是从line.p1()到line.p2()
+// 这个函数可以找出的不是准确的交点，但是执行效率比较高。
 //
 bool IntersectedPoint(const QLineF& line, const QPainterPath& contour, QPointF& p)
 {
@@ -160,6 +163,34 @@ bool IntersectedPoint(const QLineF& line, const QPainterPath& contour, QPointF& 
     return true;
 }
 
+void  test1(QGraphicsScene* scene)
+{
+    QPainterPath ppTarget;
+    ppTarget.addEllipse(0, 0, 25, 25);
+    ppTarget.addRect(-10, -10, 30, 30);
+    QGraphicsItem* target = scene->addPath(ppTarget);
+    target->setTransformOriginPoint(QPointF(12.5, 12.5));
+    target->setRotation(15);
+    target->setPos(100, 100);
+
+    QPainterPath projectilePath;
+    projectilePath.moveTo(105, 105);
+    projectilePath.lineTo(83, 95);
+    scene->addPath(projectilePath, QPen(Qt::DashLine));
+    scene->addText("start")->setPos(180, 150);
+    scene->addText("end")->setPos(20, 0);
+
+    QList<QPointF> points;
+    QPainterPath p2 = target->mapToScene(target->shape());
+    QPainterPath p3 =Intersected(projectilePath, p2);
+    for (int j = 0, i = 1; j < p3.elementCount(); ++j, ++i) {
+        QPointF p = p3.elementAt(j);
+        Q_ASSERT(p2.contains(p));
+        scene->addEllipse(p.x() - i, p.y() - i, 2*i, 2*i, QPen(Qt::red));
+        ++i;
+    }
+}
+
 void  test2(QGraphicsScene* scene)
 {
     QPainterPath ppTarget;
@@ -180,7 +211,7 @@ void  test2(QGraphicsScene* scene)
     QList<QPointF> points;
     int i = 1;
     QPainterPath p2 = target->mapToScene(target->shape());
-    Intersected(p2, projectilePath, points);
+    Intersected(projectilePath, p2, points);
     foreach (const QPointF &p, points) {
         Q_ASSERT(p2.contains(p));
         scene->addEllipse(p.x() - i, p.y() - i, 2*i, 2*i, QPen(Qt::red));
@@ -191,14 +222,14 @@ void  test2(QGraphicsScene* scene)
 void test3(QGraphicsScene* scene)
 {
     QPainterPath ppTarget;
-    ppTarget.addEllipse(0, 0, 25, 25);
+//    ppTarget.addEllipse(0, 0, 25, 25);
     ppTarget.addRect(-10, -10, 30, 30);
     QGraphicsItem* target = scene->addPath(ppTarget);
     target->setTransformOriginPoint(QPointF(12.5, 12.5));
     target->setRotation(15);
     target->setPos(100, 100);
 
-    QLineF line(128, 110, 83, 95);
+    QLineF line(198, 190, 83, 95);
     scene->addLine(line, QPen(Qt::DashLine));
     scene->addText("start")->setPos(180, 150);
     scene->addText("end")->setPos(20, 0);
@@ -218,8 +249,9 @@ int main2(int argc, char *argv[])
     view.setScene(scene);
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.scale(qreal(15.0), qreal(15.0));
+    view.scale(qreal(5.0), qreal(5.0));
 
+//    test1(scene);
 //    test2(scene);
     test3(scene);
 
