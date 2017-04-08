@@ -268,7 +268,9 @@ void Graph::resize(const QSizeF &s)
     berthGripsAt();
 
     // 假装更新位置，强迫scene更新背景。否则右下角grip拖动缩小时有残影！！！
-    setX(x() + 0.000001);
+    if (!g->shouldChangeXPos() && !g->shouldChangeYPos()) {
+        setX(x() + 0.000001);
+    }
 }
 
 void Graph::focusInEvent(QFocusEvent *event)
