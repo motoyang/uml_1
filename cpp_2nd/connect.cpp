@@ -5,10 +5,9 @@ template<typename R = void, typename... Args>
 class Fns
 {
 private:
-    std::list<std::function<R(Args...)> > _calls;
+    std::list<std::function<R(Args...)>> _calls;
 
 public:
-
     virtual ~Fns()
     {
         _calls.clear();
@@ -52,6 +51,11 @@ public:
     {
         printf("Foo::bar(%d, %d)\n", x, y);
     }
+
+    void bar3(int x, int y) const
+    {
+        printf("Foo::bar3(%d, %d)\n", x, y);
+    }
 };
 
 void foobar(int x, int y)
@@ -74,11 +78,10 @@ int main(void)
     s2.emit(3, 5);
 
     Fns<void, int, int> s;
-
     // Connect a function
     s.connect(foobar);
     // Connect a class method
-    s.connect(&foo, &Foo::bar);
+    s.connect(&foo, &Foo::bar3);
     // Create and connect some lambda expression
     s.connect([&foo](int x, int y){
         printf("lambda::"); foo.bar(x, y);

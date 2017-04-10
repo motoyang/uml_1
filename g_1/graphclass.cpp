@@ -4,10 +4,11 @@
 //#include <QBrush>
 #include <QFontMetrics>
 #include <QPainter>
+#include <QGraphicsSceneDragDropEvent>
 //#include <QGraphicsScene>
 //#include <QGraphicsSceneMouseEvent>
 //#include <QApplication>
-//#include <QDebug>
+#include <QDebug>
 #include "graphclass.h"
 
 //
@@ -65,31 +66,70 @@ void GraphClass::placeName()
     m_nameXPos = (m_size.width() - getSize(m_name).width()) / 2;
 }
 
-void GraphClass::createGrips()
+void GraphClass::resize(const QSizeF &diff)
 {
-    if (!m_grips.isEmpty()) {
-        Q_ASSERT(false);
-        return;
+    QSizeF szNew = m_size;
+    auto g = m_grips.at(m_currentGripIndex);
+    g->pretreateSize(diff, szNew);
+
+    if (szNew.width() >= m_minSize.width()) {
+        m_size.setWidth(szNew.width());
+        if (g->shouldChangeXPos()) {
+            setX(x() + diff.width());
+        }
+    }
+    if (szNew.height() > m_minSize.height()) {
+        m_size.setHeight(szNew.height());
+        if (g->shouldChangeYPos()) {
+            setY(y() + diff.height());
+        }
     }
 
-    m_grips << QSharedPointer<Grip>::create(Grip::LEFT_TOP_GRIP)
-            << QSharedPointer<Grip>::create(Grip::LEFT_CENTER_GRIP)
-            << QSharedPointer<Grip>::create(Grip::LEFT_BOTTOM_GRIP)
-            << QSharedPointer<Grip>::create(Grip::BOTTOM_CENTER_GRIP)
-            << QSharedPointer<Grip>::create(Grip::RIGHT_BOTTOM_GRIP)
-            << QSharedPointer<Grip>::create(Grip::RIGHT_CENTER_GRIP)
-            << QSharedPointer<Grip>::create(Grip::RIGHT_TOP_GRIP)
-            << QSharedPointer<Grip>::create(Grip::TOP_CENTER_GRIP);
+    berthGripsAt();
+
+    // 假装更新位置，强迫scene更新背景。否则右下角grip拖动缩小时有残影！！！
+    if (!g->shouldChangeXPos() && !g->shouldChangeYPos()) {
+        setX(x() + 0.000001);
+    }
+}
+
+void GraphClass::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+{
+    qDebug() << "dragEnterEvent" << event->dropAction();
+}
+
+void GraphClass::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    qDebug() << "dragLeaveEvent" << event->dropAction();
+}
+
+void GraphClass::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    qDebug() << "dragMoveEvent" << event->dropAction();
+}
+
+void GraphClass::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+    qDebug() << "dropEvent" << event->dropAction();
 }
 
 GraphClass::GraphClass(const QPointF &p, const QSizeF s, const QString& name)
-    : Graph(p, s), m_c(name)
+    : Graph(p), m_c(name), m_size(s)
 {
     m_name = m_c.name;
     m_attributes << "-attribute1: float" << "+att2" << "a3: string = abc" << "a4";
     m_operations << "#operation1(p1: int=3, p2: string)" << "+operation2()" << "-op3(p4: double)";
 
+    setAcceptDrops(true);
+
     init();
+}
+
+QRectF GraphClass::boundingRect() const
+{
+    qreal penHalfWidth = pen().widthF() / 2;
+    return QRectF(0 - penHalfWidth, 0 - penHalfWidth, m_size.width()
+                  + penHalfWidth *2, m_size.height() + penHalfWidth*2);
 }
 
 void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -134,6 +174,23 @@ void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     }
 
     drawGrips(painter);
+}
+
+void GraphClass::createGrips()
+{
+    if (!m_grips.isEmpty()) {
+        Q_ASSERT(false);
+        return;
+    }
+
+    m_grips << QSharedPointer<Grip>::create(Grip::LEFT_TOP_GRIP)
+            << QSharedPointer<Grip>::create(Grip::LEFT_CENTER_GRIP)
+            << QSharedPointer<Grip>::create(Grip::LEFT_BOTTOM_GRIP)
+            << QSharedPointer<Grip>::create(Grip::BOTTOM_CENTER_GRIP)
+            << QSharedPointer<Grip>::create(Grip::RIGHT_BOTTOM_GRIP)
+            << QSharedPointer<Grip>::create(Grip::RIGHT_CENTER_GRIP)
+            << QSharedPointer<Grip>::create(Grip::RIGHT_TOP_GRIP)
+            << QSharedPointer<Grip>::create(Grip::TOP_CENTER_GRIP);
 }
 
 void GraphClass::berthGripsAt()

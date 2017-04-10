@@ -4,10 +4,13 @@
 //#include <QBrush>
 //#include <QFontMetrics>
 //#include <QGraphicsScene>
+#include <QtWidgets>
+#include <QMimeData>
+#include <QDrag>
 #include <QPainter>
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
-//#include <QDebug>
+#include <QDebug>
 #include "graph.h"
 
 //
@@ -25,7 +28,11 @@ Qt::CursorShape Grip::cursorShape() const
         { Grip::LEFT_TOP_GRIP, Qt::SizeFDiagCursor },
         { Grip::RIGHT_TOP_GRIP, Qt::SizeBDiagCursor },
         { Grip::LEFT_BOTTOM_GRIP, Qt::SizeBDiagCursor },
-        { Grip::RIGHT_BOTTOM_GRIP, Qt::SizeFDiagCursor }
+        { Grip::RIGHT_BOTTOM_GRIP, Qt::SizeFDiagCursor },
+
+        { Grip::SOURCE_GRIP, Qt::SizeAllCursor },
+        { Grip::TARGET_GRIP, Qt::SizeAllCursor }
+
     };
 
     return cs.value(m_type);
@@ -39,6 +46,7 @@ bool Grip::shouldChangeYPos() const
     case LEFT_TOP_GRIP:
     case TOP_CENTER_GRIP:
     case RIGHT_TOP_GRIP:
+    case SOURCE_GRIP:
         bRet = true;
         break;
     default:
@@ -56,6 +64,7 @@ bool Grip::shouldChangeXPos() const
     case LEFT_TOP_GRIP:
     case LEFT_CENTER_GRIP:
     case LEFT_BOTTOM_GRIP:
+    case SOURCE_GRIP:
         bRet = true;
         break;
     default:
@@ -69,6 +78,7 @@ void Grip::pretreateSize(const QSizeF &diff, QSizeF &sz) const
 {
     switch (m_type) {
     case LEFT_TOP_GRIP:
+    case SOURCE_GRIP:
         sz -= diff;
         break;
     case LEFT_CENTER_GRIP:
@@ -82,6 +92,7 @@ void Grip::pretreateSize(const QSizeF &diff, QSizeF &sz) const
         sz.setHeight(sz.height() + diff.height());
         break;
     case RIGHT_BOTTOM_GRIP:
+    case TARGET_GRIP:
         sz += diff;
         break;
     case RIGHT_CENTER_GRIP:
@@ -107,8 +118,7 @@ void Grip::pretreateSize(const QSizeF &diff, QSizeF &sz) const
 
 const TextPadding Graph::s_padding = {5.0, 5.0, 5.0, 5.0};
 
-Graph::Graph(const QPointF &p, const QSizeF s)
-    : m_size(s)
+Graph::Graph(const QPointF &p)
 {
     setX(p.x());
     setY(p.y());
@@ -132,12 +142,6 @@ void Graph::bringToTop()
             zValue = item->zValue() + 0.1;
     }
     setZValue(zValue);
-}
-QRectF Graph::boundingRect() const
-{
-    qreal penHalfWidth = pen().widthF() / 2;
-    return QRectF(0 - penHalfWidth, 0 - penHalfWidth, m_size.width()
-                  + penHalfWidth *2, m_size.height() + penHalfWidth*2);
 }
 
 QVariant Graph::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -206,7 +210,7 @@ void Graph::setFont(const QFont &f)
 void Graph::drawGrips(QPainter *painter) const
 {
     foreach (const auto& g, m_grips) {
-        painter->drawRect(g->m_rect);
+        painter->drawEllipse(g->m_rect);
     }
 }
 
@@ -217,6 +221,8 @@ void Graph::removeGrips()
 
 void Graph::hoverOnGrip(const QPointF &p)
 {
+//    qDebug() << "hoverOnGrip" << p;
+
     int i = 0;
     for (i = 0; i < m_grips.size(); ++i) {
         const auto& g = m_grips.at(i);
@@ -246,33 +252,6 @@ bool Graph::isGrippedState() const
     return m_currentGripIndex < m_grips.size();
 }
 
-void Graph::resize(const QSizeF &s)
-{
-    QSizeF szNew = m_size;
-    auto g = m_grips.at(m_currentGripIndex);
-    g->pretreateSize(s, szNew);
-
-    if (szNew.width() >= m_minSize.width()) {
-        m_size.setWidth(szNew.width());
-        if (g->shouldChangeXPos()) {
-            setX(x() + s.width());
-        }
-    }
-    if (szNew.height() > m_minSize.height()) {
-        m_size.setHeight(szNew.height());
-        if (g->shouldChangeYPos()) {
-            setY(y() + s.height());
-        }
-    }
-
-    berthGripsAt();
-
-    // 假装更新位置，强迫scene更新背景。否则右下角grip拖动缩小时有残影！！！
-    if (!g->shouldChangeXPos() && !g->shouldChangeYPos()) {
-        setX(x() + 0.000001);
-    }
-}
-
 void Graph::focusInEvent(QFocusEvent *event)
 {
     setAcceptHoverEvents(true);
@@ -296,21 +275,32 @@ void Graph::focusOutEvent(QFocusEvent *event)
 
 void Graph::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    if (event->button() == Qt::LeftButton) {
+        m_bMouseLeftButtonPressed = true;
+    }
     QGraphicsItem::mousePressEvent(event);
 }
 
 void Graph::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (isGrippedState() && event->buttons() & Qt::LeftButton) {
+    qDebug() << "mouseMoveEvent " << event->pos() << event->button();
+
+    if (isGrippedState() && (event->buttons() & Qt::LeftButton)) {
         QPointF p = event->scenePos() - event->lastScenePos();
         resize(QSizeF(p.x(), p.y()));
     } else {
+        qDebug() << "mouseMoveEvent222 " << event->pos();
         QGraphicsItem::mouseMoveEvent(event);
     }
 }
 
 void Graph::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    if (event->button() == Qt::LeftButton) {
+        m_bMouseLeftButtonPressed = false;
+        hoverOnGrip(event->pos());
+    }
+
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
@@ -322,8 +312,11 @@ void Graph::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 
 void Graph::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    m_currentGripIndex = std::numeric_limits<int>::max();
-    setCursor(QCursor(Qt::ArrowCursor));
+    if (!m_bMouseLeftButtonPressed) {
+        m_currentGripIndex = std::numeric_limits<int>::max();
+        setCursor(QCursor(Qt::ArrowCursor));
+    }
+
     QGraphicsItem::hoverLeaveEvent(event);
 }
 
@@ -334,3 +327,147 @@ void Graph::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     QGraphicsItem::hoverMoveEvent(event);
 }
 
+
+QPointF GraphRelation::p1() const
+{
+    return m_p1;
+}
+
+QPointF GraphRelation::p2() const
+{
+    return m_p2;
+}
+
+void GraphRelation::createGrips()
+{
+    if (!m_grips.isEmpty()) {
+        Q_ASSERT(false);
+        return;
+    }
+
+    m_grips << QSharedPointer<Grip>::create(Grip::SOURCE_GRIP)
+            << QSharedPointer<Grip>::create(Grip::TARGET_GRIP);
+}
+
+void GraphRelation::berthGripsAt()
+{
+    foreach (const auto& g, m_grips) {
+        switch (g->m_type) {
+        case Grip::SOURCE_GRIP:
+            g->m_rect.moveCenter(p1());
+            break;
+        case Grip::TARGET_GRIP:
+            g->m_rect.moveCenter(p2());
+            break;
+        default:
+            Q_ASSERT(false);
+        }
+    }
+}
+
+void GraphRelation::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    Graph::mousePressEvent(event);
+
+}
+
+void GraphRelation::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+
+    if (QLineF(event->screenPos(), event->buttonDownScreenPos(Qt::LeftButton))
+        .length() < QApplication::startDragDistance()) {
+        Graph::mouseMoveEvent(event);
+        return;
+    }
+
+    QDrag *drag = new QDrag(event->widget());
+    QMimeData *mime = new QMimeData;
+    drag->setMimeData(mime);
+    drag->exec();
+
+    Graph::mouseMoveEvent(event);
+}
+
+void GraphRelation::resize(const QSizeF &diff)
+{
+    Q_ASSERT(m_currentGripIndex < m_grips.size());
+    auto g = m_grips.at(m_currentGripIndex);
+
+    switch ( g->m_type) {
+    case Grip::SOURCE_GRIP:
+        m_p1.setX(m_p1.x() + diff.width());
+        m_p1.setY(m_p1.y() + diff.height());
+        break;
+    case Grip::TARGET_GRIP:
+        m_p2.setX(m_p2.x() + diff.width());
+        m_p2.setY(m_p2.y() + diff.height());
+        break;
+    default:
+        Q_ASSERT(false);
+    }
+
+    berthGripsAt();
+
+    setX(x() + 0.0000001);
+}
+
+QRectF GraphRelation::boundingRect() const
+{
+    QRectF r(p1(), p2());
+    return r.normalized().adjusted(0 - Grip::s_size.width(), 0 - Grip::s_size.height(), Grip::s_size.width(), Grip::s_size.height());
+}
+
+void GraphRelation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
+    painter->setPen(pen());
+    painter->setBrush(brush());
+    painter->setFont(font());
+
+    painter->drawLine(p1(), p2());
+
+    QPainterPath pp = shape();
+    painter->drawPath(pp);
+
+    drawGrips(painter);
+}
+
+QPainterPath GraphRelation::shape() const
+{
+    qreal halfGrip = Grip::s_size.width() / 2;
+    QList<QPointF> points;
+    QLineF line(p1(), p2());
+    line.setLength(line.length() + halfGrip);
+    QPointF endP = line.p2();
+    QLineF line2(p2(), p1());
+    line2.setLength(line2.length() + halfGrip);
+    QPointF startP = line2.p2();
+    line.setLine(startP.x(), startP.y(), endP.x(), endP.y());
+
+    QLineF startEdge = line.normalVector();
+    startEdge.setLength(halfGrip);
+    points << startEdge.p2();
+    startEdge.setLength(0 - halfGrip);
+    points << startEdge.p2();
+
+    QLineF endEdge = QLineF(line.p2(), line.p1()).normalVector();
+    endEdge.setLength(halfGrip);
+    points << endEdge.p2();
+    endEdge.setLength(0 - halfGrip);
+    points << endEdge.p2();
+
+    points << points.first();
+
+    QPainterPath pp;
+    for(auto p = points.cbegin(); p < points.cend(); ++p) {
+        if (p == points.cbegin()) {
+            pp.moveTo(*p);
+        } else {
+            pp.lineTo(*p);
+        }
+    }
+
+    return pp;
+}

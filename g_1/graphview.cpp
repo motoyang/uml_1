@@ -32,4 +32,7 @@ GraphView::GraphView()
     g3->setBrush(QBrush(Qt::darkGreen));
     g3->setPen(QPen(QBrush(Qt::black), 3));
     s0->addItem(g3);
+
+    auto r1 = new GraphRelation(QPoint(-100, -100), QPoint(50, 50));
+    s0->addItem(r1);
 }

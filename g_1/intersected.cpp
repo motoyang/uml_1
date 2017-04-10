@@ -131,11 +131,11 @@ bool IntersectedPoint(const QLineF& line, const QPainterPath& contour, QPointF& 
     // The path needs to be a rectangle, as QPainterPath::intersected() only accounts
     // for intersections between fill areas, which projectilePath doesn't have.
     QLineF startEdge = line.normalVector();
-    startEdge.setLength(3);
+    startEdge.setLength(1);
     // The end point is currently pointing the wrong way; move it to face the same
     // direction as startEdge.
     QLineF endEdge = QLineF(line.p2(), line.p1()).normalVector();
-    endEdge.setLength(-3);
+    endEdge.setLength(-1);
 
     // Now we can create a rectangle from our edges.
     QPainterPath rectPath(startEdge.p1());
