@@ -1,16 +1,4 @@
-//#include <algorithm>
-//#include <QMap>
-//#include <QPen>
-//#include <QBrush>
-//#include <QFontMetrics>
-//#include <QGraphicsScene>
 #include <QtWidgets>
-#include <QMimeData>
-#include <QDrag>
-#include <QPainter>
-#include <QGraphicsSceneMouseEvent>
-#include <QApplication>
-#include <QDebug>
 #include "graph.h"
 
 //
@@ -144,6 +132,16 @@ void Graph::bringToTop()
     setZValue(zValue);
 }
 
+QPointF Graph::origin() const
+{
+    return QPointF(0.0, 0.0);
+}
+
+int Graph::type() const
+{
+    return GraphType;
+}
+
 QVariant Graph::itemChange(GraphicsItemChange change, const QVariant &value)
 {
 /*
@@ -205,6 +203,16 @@ QFont Graph::font() const
 void Graph::setFont(const QFont &f)
 {
     setData(FONT_KEY, QVariant(f));
+}
+
+QPointF Graph::centerPoint() const
+{
+    return boundingRect().center();
+}
+
+void Graph::setDroppedFlag(bool f)
+{
+    Q_UNUSED(f);
 }
 
 void Graph::drawGrips(QPainter *painter) const
@@ -325,149 +333,4 @@ void Graph::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     hoverOnGrip(event->pos());
 
     QGraphicsItem::hoverMoveEvent(event);
-}
-
-
-QPointF GraphRelation::p1() const
-{
-    return m_p1;
-}
-
-QPointF GraphRelation::p2() const
-{
-    return m_p2;
-}
-
-void GraphRelation::createGrips()
-{
-    if (!m_grips.isEmpty()) {
-        Q_ASSERT(false);
-        return;
-    }
-
-    m_grips << QSharedPointer<Grip>::create(Grip::SOURCE_GRIP)
-            << QSharedPointer<Grip>::create(Grip::TARGET_GRIP);
-}
-
-void GraphRelation::berthGripsAt()
-{
-    foreach (const auto& g, m_grips) {
-        switch (g->m_type) {
-        case Grip::SOURCE_GRIP:
-            g->m_rect.moveCenter(p1());
-            break;
-        case Grip::TARGET_GRIP:
-            g->m_rect.moveCenter(p2());
-            break;
-        default:
-            Q_ASSERT(false);
-        }
-    }
-}
-
-void GraphRelation::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    Graph::mousePressEvent(event);
-
-}
-
-void GraphRelation::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-
-    if (QLineF(event->screenPos(), event->buttonDownScreenPos(Qt::LeftButton))
-        .length() < QApplication::startDragDistance()) {
-        Graph::mouseMoveEvent(event);
-        return;
-    }
-
-    QDrag *drag = new QDrag(event->widget());
-    QMimeData *mime = new QMimeData;
-    drag->setMimeData(mime);
-    drag->exec();
-
-    Graph::mouseMoveEvent(event);
-}
-
-void GraphRelation::resize(const QSizeF &diff)
-{
-    Q_ASSERT(m_currentGripIndex < m_grips.size());
-    auto g = m_grips.at(m_currentGripIndex);
-
-    switch ( g->m_type) {
-    case Grip::SOURCE_GRIP:
-        m_p1.setX(m_p1.x() + diff.width());
-        m_p1.setY(m_p1.y() + diff.height());
-        break;
-    case Grip::TARGET_GRIP:
-        m_p2.setX(m_p2.x() + diff.width());
-        m_p2.setY(m_p2.y() + diff.height());
-        break;
-    default:
-        Q_ASSERT(false);
-    }
-
-    berthGripsAt();
-
-    setX(x() + 0.0000001);
-}
-
-QRectF GraphRelation::boundingRect() const
-{
-    QRectF r(p1(), p2());
-    return r.normalized().adjusted(0 - Grip::s_size.width(), 0 - Grip::s_size.height(), Grip::s_size.width(), Grip::s_size.height());
-}
-
-void GraphRelation::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-
-    painter->setPen(pen());
-    painter->setBrush(brush());
-    painter->setFont(font());
-
-    painter->drawLine(p1(), p2());
-
-    QPainterPath pp = shape();
-    painter->drawPath(pp);
-
-    drawGrips(painter);
-}
-
-QPainterPath GraphRelation::shape() const
-{
-    qreal halfGrip = Grip::s_size.width() / 2;
-    QList<QPointF> points;
-    QLineF line(p1(), p2());
-    line.setLength(line.length() + halfGrip);
-    QPointF endP = line.p2();
-    QLineF line2(p2(), p1());
-    line2.setLength(line2.length() + halfGrip);
-    QPointF startP = line2.p2();
-    line.setLine(startP.x(), startP.y(), endP.x(), endP.y());
-
-    QLineF startEdge = line.normalVector();
-    startEdge.setLength(halfGrip);
-    points << startEdge.p2();
-    startEdge.setLength(0 - halfGrip);
-    points << startEdge.p2();
-
-    QLineF endEdge = QLineF(line.p2(), line.p1()).normalVector();
-    endEdge.setLength(halfGrip);
-    points << endEdge.p2();
-    endEdge.setLength(0 - halfGrip);
-    points << endEdge.p2();
-
-    points << points.first();
-
-    QPainterPath pp;
-    for(auto p = points.cbegin(); p < points.cend(); ++p) {
-        if (p == points.cbegin()) {
-            pp.moveTo(*p);
-        } else {
-            pp.lineTo(*p);
-        }
-    }
-
-    return pp;
 }

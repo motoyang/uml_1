@@ -57,6 +57,15 @@ protected:
     QList<QSharedPointer<Grip>> m_grips;
     int m_currentGripIndex = std::numeric_limits<int>::max();
 
+    enum {
+        GraphType           = UserType + 1,
+        GraphClassType      = UserType + 2,
+        GraphRelationType   = UserType + 3
+
+    };
+
+    QPointF origin() const;
+
     // 子类要实现
     virtual void resize(const QSizeF &diff) = 0;
 
@@ -82,6 +91,9 @@ public:
     Graph(const QPointF& p);
 
     virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    virtual int type() const override;
+    virtual bool shouldBeenDropped(const QPointF& p) = 0;
+    virtual void setDroppedFlag(bool f);
 
     QPen pen() const;
     void setPen(const QPen& p);
@@ -89,36 +101,8 @@ public:
     void setBrush(const QBrush& b);
     QFont font() const;
     void setFont(const QFont& f);
-};
 
-
-class GraphRelation: public Graph
-{
-    QPointF m_p1, m_p2;
-
-    QPointF p1() const;
-    QPointF p2() const;
-
-protected:
-    // grip相关的操作，子类可以override或实现这些操作。
-    virtual void createGrips() override;
-    virtual void berthGripsAt() override;
-
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-
-    // 子类要实现
-    virtual void resize(const QSizeF &diff) override;
-
-public:
-    GraphRelation(const QPointF& p1, const QPoint& p2)
-        : Graph(p1), m_p1(p1), m_p2(p2)
-    {}
-
-    virtual QRectF boundingRect() const override;
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-    virtual QPainterPath shape() const override;
-
+    QPointF centerPoint() const;
 };
 
 #endif // GRAPH_H

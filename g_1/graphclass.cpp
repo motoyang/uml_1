@@ -1,14 +1,4 @@
-//#include <algorithm>
-//#include <QMap>
-//#include <QPen>
-//#include <QBrush>
-#include <QFontMetrics>
-#include <QPainter>
-#include <QGraphicsSceneDragDropEvent>
-//#include <QGraphicsScene>
-//#include <QGraphicsSceneMouseEvent>
-//#include <QApplication>
-#include <QDebug>
+#include <QtWidgets>
 #include "graphclass.h"
 
 //
@@ -66,6 +56,13 @@ void GraphClass::placeName()
     m_nameXPos = (m_size.width() - getSize(m_name).width()) / 2;
 }
 
+void GraphClass::drawDropped(QPainter *painter)
+{
+    if (m_bDroppedVisible) {
+        painter->drawEllipse(boundingRect());
+    }
+}
+
 void GraphClass::resize(const QSizeF &diff)
 {
     QSizeF szNew = m_size;
@@ -91,6 +88,17 @@ void GraphClass::resize(const QSizeF &diff)
     if (!g->shouldChangeXPos() && !g->shouldChangeYPos()) {
         setX(x() + 0.000001);
     }
+}
+
+bool GraphClass::shouldBeenDropped(const QPointF &p)
+{
+    return shape().contains(mapFromScene(p));
+}
+
+void GraphClass::setDroppedFlag(bool f)
+{
+    m_bDroppedVisible = f;
+    update();
 }
 
 void GraphClass::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
@@ -123,6 +131,13 @@ GraphClass::GraphClass(const QPointF &p, const QSizeF s, const QString& name)
     setAcceptDrops(true);
 
     init();
+}
+
+QPainterPath GraphClass::shape() const
+{
+    QPainterPath pp;
+    pp.addRect(0, 0, m_size.width(), m_size.height());
+    return pp;
 }
 
 QRectF GraphClass::boundingRect() const
@@ -173,7 +188,14 @@ void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
         y+= fm.lineSpacing();
     }
 
+//    painter->drawPath(shape());
     drawGrips(painter);
+    drawDropped(painter);
+}
+
+int GraphClass::type() const
+{
+    return GraphClassType;
 }
 
 void GraphClass::createGrips()

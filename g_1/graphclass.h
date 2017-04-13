@@ -7,6 +7,7 @@ class GraphClass: public Graph
 {
     uml::Class m_c;
     QSizeF m_size, m_minSize;
+    bool m_bDroppedVisible;
 
     QString m_name;
     QList<QString> m_operations;
@@ -18,6 +19,7 @@ class GraphClass: public Graph
     QSizeF getSize(const QList<QString>& l) const;
     void init();
     void placeName();
+    void drawDropped(QPainter* painter);
 
     virtual void resize(const QSizeF &diff) override;
 
@@ -37,8 +39,14 @@ protected:
 public:
     GraphClass(const QPointF& p, const QSizeF s, const QString& name);
 
+    virtual QPainterPath shape() const override;
     virtual QRectF boundingRect() const override;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
+    virtual int type() const override;
+    virtual bool shouldBeenDropped(const QPointF &p) override;
+    virtual void setDroppedFlag(bool f) override;
+
 };
 
 #endif // GRAPHCLASS_H

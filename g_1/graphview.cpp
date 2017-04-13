@@ -1,6 +1,7 @@
 #include "graphview.h"
 #include "graph.h"
 #include "graphclass.h"
+#include "graphrelation.h"
 
 GraphView::GraphView()
 {
@@ -10,8 +11,8 @@ GraphView::GraphView()
     s0->setSceneRect(-200, -100, 400, 200);
     setScene(s0);
 
-    setCacheMode(CacheBackground);
-    setViewportUpdateMode(BoundingRectViewportUpdate);
+//    setCacheMode(CacheBackground);
+//    setViewportUpdateMode(BoundingRectViewportUpdate);
     setRenderHint(QPainter::Antialiasing);
     setTransformationAnchor(AnchorUnderMouse);
     scale(qreal(2.0), qreal(2.0));
@@ -25,6 +26,8 @@ GraphView::GraphView()
 //    i3->setTextInteractionFlags(Qt::TextEditorInteraction);
 //    i3->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsMovable);
 //    s0->addItem(i3);
+
+//    s0->addLine(50, -50, 100, -100);
 
     s0->addItem(new GraphClass(QPoint(0, 0), QSize(30, 30), "Class1"));
     s0->addItem(new GraphClass(QPoint(0, 50), QSize(230, 300), "Classname2"));

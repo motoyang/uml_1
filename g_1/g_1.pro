@@ -33,11 +33,14 @@ SOURCES += main.cpp\
     fun.cpp \
     graphscene.cpp \
     intersected.cpp \
-    graphclass.cpp
+    graphclass.cpp \
+    graphrelation.cpp
 
 HEADERS  += widget.h \
     graph.h \
     graphview.h \
     entity.h \
     graphscene.h \
-    graphclass.h
+    graphclass.h \
+    intersected.h \
+    graphrelation.h
