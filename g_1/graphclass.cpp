@@ -1,4 +1,5 @@
 #include <QtWidgets>
+#include "defaultsettings.h"
 #include "graphclass.h"
 
 //
@@ -28,6 +29,8 @@ QSizeF GraphClass::getSize(const QList<QString> &l) const
 
 void GraphClass::init()
 {
+    const TextPadding &tp = Singleton<Settings>::instance().textPadding();
+
     QSizeF szName = getSize(m_name);
     QSizeF szAttributes = getSize(m_attributes);
     qreal w = std::max<qreal>(szName.width(), szAttributes.width());
@@ -35,9 +38,9 @@ void GraphClass::init()
     w = std::max(w, szOperations.width());
 
     qreal penWidth = pen().widthF();
-    w = w + s_padding.left + s_padding.right + penWidth;
+    w = w + tp.left + tp.right + penWidth;
     qreal h = szName.height() + szAttributes.height() + szOperations.height()
-            + penWidth * 3 + (s_padding.top + s_padding.bottom) * 3;
+            + penWidth * 3 + (tp.top + tp.bottom) * 3;
     m_minSize.setWidth(w);
     m_minSize.setHeight(h);
 
@@ -152,6 +155,8 @@ void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    const TextPadding &tp = Singleton<Settings>::instance().textPadding();
+
     painter->setPen(pen());
     painter->setBrush(brush());
     painter->setFont(font());
@@ -165,24 +170,24 @@ void GraphClass::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     painter->drawRect(r);
 
     qreal x = m_nameXPos;
-    qreal y = halfWidthPen + s_padding.top + fm.ascent();
+    qreal y = halfWidthPen + tp.top + fm.ascent();
     painter->drawText(x, y, m_name);
 
-    qreal yLine = s_padding.top + fm.height()+ s_padding.bottom + p.widthF();
+    qreal yLine = tp.top + fm.height()+ tp.bottom + p.widthF();
     painter->drawLine(0, yLine, m_size.width(), yLine);
 
-    x = halfWidthPen + s_padding.left;
-    y += fm.height() + s_padding.bottom + p.widthF() + s_padding.top;
+    x = halfWidthPen + tp.left;
+    y += fm.height() + tp.bottom + p.widthF() + tp.top;
     foreach (const QString& s, m_attributes) {
         painter->drawText(x, y, s);
         y+= fm.lineSpacing();
         yLine += fm.lineSpacing();
     }
 
-    yLine += p.widthF() + s_padding.top + s_padding.bottom - fm.leading();
+    yLine += p.widthF() + tp.top + tp.bottom - fm.leading();
     painter->drawLine(0, yLine, m_size.width(), yLine);
 
-    y += p.widthF() + s_padding.bottom + s_padding.top;
+    y += p.widthF() + tp.bottom + tp.top;
     foreach (const QString& s, m_operations) {
         painter->drawText(x, y, s);
         y+= fm.lineSpacing();
@@ -217,8 +222,10 @@ void GraphClass::createGrips()
 
 void GraphClass::berthGripsAt()
 {
+    const QSizeF &szGrip = Singleton<Settings>::instance().sizeOfGrip();
+
     QRectF br(0, 0, m_size.width(), m_size.height());
-    QRectF gr(0.0, 0.0, Grip::s_size.width(), Grip::s_size.height());
+    QRectF gr(0.0, 0.0, szGrip.width(), szGrip.height());
 
     foreach (const auto& g, m_grips) {
         switch (g->m_type) {

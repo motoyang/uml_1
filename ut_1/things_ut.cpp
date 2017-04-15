@@ -1,10 +1,18 @@
 #include <iostream>
 #include <list>
 #include "doctest/doctest.h"
-#include "../g_1/things.h"
+#include "../g_1/entity.h"
+#include "../g_1/singleton.h"
 
 using namespace std;
 //using namespace uml;
+
+void print_singleton()
+{
+    cout << __FUNCTION__<< " output--------------------------------------------" << endl;
+    Singleton<A>::instance().opA1();
+    A2::instance().opA2();
+}
 
 void print_interface(const uml::Interface& i)
 {
@@ -43,6 +51,8 @@ void print_class(const uml::Class& c)
 
 void test_out_1()
 {
+    print_singleton();
+
     uml::Parameter p("inout", "p1", "t1", "d1");
     uml::Parameter p2("p2", "t2", "d2");
     uml::Parameter p3("p3", "t3");

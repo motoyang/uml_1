@@ -8,9 +8,12 @@ class GraphRelation: public Graph
     // m_p2是本item坐标系中的点
     QPointF m_p2;
 
+    // 返回的都是scene坐标
     QPointF p1() const;
     QPointF p2() const;
-    void setStartPoint(const QPointF& p);   // p是scene坐标
+
+    // p是scene坐标
+    void setStartPoint(const QPointF& p);
 
     Graph *m_source = nullptr, *m_target = nullptr, *m_dropped = nullptr;
     void setDroppedGraph(const Graph* g);
@@ -37,7 +40,7 @@ public:
 
     // p1和p2都是scene坐标中的点
     GraphRelation(const QPointF& p1, const QPoint& p2)
-        : Graph(p1)//, m_p1(p1), m_p2(p2)
+        : Graph(p1)
     {
         m_p2 = mapFromScene(p2);
     }

@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     graphscene.cpp \
     intersected.cpp \
     graphclass.cpp \
-    graphrelation.cpp
+    graphrelation.cpp \
+    defaultsettings.cpp
 
 HEADERS  += widget.h \
     graph.h \
@@ -43,4 +44,6 @@ HEADERS  += widget.h \
     graphscene.h \
     graphclass.h \
     intersected.h \
-    graphrelation.h
+    graphrelation.h \
+    singleton.h \
+    defaultsettings.h

@@ -1,6 +1,7 @@
 #include <QtWidgets>
-#include "graphrelation.h"
 #include "intersected.h"
+#include "defaultsettings.h"
+#include "graphrelation.h"
 
 //
 // GraphRelation
@@ -240,10 +241,10 @@ QRectF GraphRelation::boundingRect() const
 {
     QRectF r(origin(), m_p2);
     return r.normalized()
-            .adjusted(0 - Grip::s_size.width(),
-                      0 - Grip::s_size.height(),
-                      Grip::s_size.width(),
-                      Grip::s_size.height()
+            .adjusted(0 - 6,
+                      0 - 6,
+                      6,
+                      6
                       );
 }
 
@@ -266,7 +267,8 @@ void GraphRelation::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 
 QPainterPath GraphRelation::shape() const
 {
-    qreal halfGrip = Grip::s_size.width() / 2;
+    qreal halfGrip = Singleton<Settings>::instance().sizeOfGrip().width() / 2;
+
     QList<QPointF> points;
     QLineF line(origin(), m_p2);
     line.setLength(line.length() + halfGrip);

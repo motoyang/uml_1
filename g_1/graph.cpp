@@ -1,10 +1,18 @@
 #include <QtWidgets>
+#include "defaultsettings.h"
 #include "graph.h"
 
 //
 // Grip
 //
-const QSizeF Grip::s_size = {6, 6};
+
+Grip::Grip(Grip::GripType t)
+    : m_type(t),
+      m_rect(0, 0,
+             Singleton<Settings>::instance().sizeOfGrip().width(),
+             Singleton<Settings>::instance().sizeOfGrip().height())
+{
+}
 
 Qt::CursorShape Grip::cursorShape() const
 {
@@ -103,8 +111,6 @@ void Grip::pretreateSize(const QSizeF &diff, QSizeF &sz) const
 //
 // Graph
 //
-
-const TextPadding Graph::s_padding = {5.0, 5.0, 5.0, 5.0};
 
 Graph::Graph(const QPointF &p)
 {

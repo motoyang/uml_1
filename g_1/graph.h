@@ -4,16 +4,7 @@
 #include <QAbstractGraphicsShapeItem>
 #include "entity.h"
 
-struct TextPadding {
-    qreal top;
-    qreal left;
-    qreal right;
-    qreal bottom;
-};
-
 struct Grip {
-    static const QSizeF s_size;
-
     enum GripType {
         TOP_CENTER_GRIP,
         BOTTOM_CENTER_GRIP,
@@ -31,9 +22,7 @@ struct Grip {
     GripType m_type;
     QRectF m_rect;
 
-    Grip(GripType t)
-        : m_type(t), m_rect(0, 0, s_size.width(), s_size.height())
-    {}
+    Grip(GripType t);
 
     Qt::CursorShape cursorShape() const;
     bool shouldChangeYPos() const;
@@ -51,8 +40,6 @@ class Graph: public QGraphicsItem
     void bringToTop();
 
 protected:
-    static const TextPadding s_padding;
-
     bool m_bMouseLeftButtonPressed = false;
     QList<QSharedPointer<Grip>> m_grips;
     int m_currentGripIndex = std::numeric_limits<int>::max();
