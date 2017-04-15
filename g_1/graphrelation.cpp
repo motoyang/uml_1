@@ -6,13 +6,13 @@
 //
 // GraphRelation
 //
-QPointF GraphRelation::p1() const
+QPointF GraphRelation::startPoint() const
 {
     // 返回scene坐标系的p1
     return QPointF(x(), y());
 }
 
-QPointF GraphRelation::p2() const
+QPointF GraphRelation::endPoint() const
 {
     // 返回scene坐标系的p2
     return mapToScene(m_p2);
@@ -22,7 +22,7 @@ QPointF GraphRelation::p2() const
 void GraphRelation::setStartPoint(const QPointF &p)
 {
     // 记录p2()的位置，等会要转回item坐标赋值给m_p2;
-    QPointF old_p2 = p2();
+    QPointF old_p2 = endPoint();
 
     // 设置位置
     setX(p.x());
@@ -86,7 +86,7 @@ void GraphRelation::linkTargetGraph(const Graph* g)
 
     // 计算从p1()到目标graph的交点，返回的是scene坐标点
     QPointF p;
-    bool bIntersected = linkedPointer(p1(), m_target, p);
+    bool bIntersected = linkedPointer(startPoint(), m_target, p);
     Q_ASSERT_X(bIntersected, "GraphRelation::linkTargetGraph()", "err");
 
     setEndPoint(p);
@@ -103,7 +103,7 @@ void GraphRelation::linkSourceGraph(const Graph* g)
 
     // 计算从p2()到源graph的交点，返回的是scene坐标点
     QPointF p;
-    bool bIntersected = linkedPointer(p2(), m_source, p);
+    bool bIntersected = linkedPointer(endPoint(), m_source, p);
     Q_ASSERT_X(bIntersected, "GraphRelation::linkSourceGraph", "err");
 
     // 根据计算得出的交点，重新设置position
@@ -119,10 +119,13 @@ void GraphRelation::setTargetGraph(const Graph *g)
     // 如果原先有连接的graph，先与原graph断开
     if (m_target) {
         m_target->disconnectTarget(this);
+        m_target = nullptr;
     }
 
-    m_target = const_cast<Graph*>(g);
-    m_target->connectTarget(this);
+    if (g) {
+        m_target = const_cast<Graph*>(g);
+        m_target->connectTarget(this);
+    }
 }
 
 void GraphRelation::setSourceGraph(const Graph *g)
@@ -134,10 +137,13 @@ void GraphRelation::setSourceGraph(const Graph *g)
     // 如果原先有连接的graph，先与原graph断开
     if (m_source) {
         m_source->disconnectSource(this);
+        m_source = nullptr;
     }
 
-    m_source =  const_cast<Graph*>(g);
-    m_source->connectSource(this);
+    if (g) {
+        m_source =  const_cast<Graph*>(g);
+        m_source->connectSource(this);
+    }
 }
 
 bool GraphRelation::linkedPointer(const QPointF &start, const Graph *g, QPointF& intersectedPoint)
@@ -166,7 +172,8 @@ bool GraphRelation::linkGraphs()
 
     // 根据计算结果，重新赋值起点和终点
     setStartPoint(p1);
-    m_p2 = mapFromScene(p2);
+    setEndPoint(p2);
+//    m_p2 = mapFromScene(p2);
 
     return b1 && b2;
 }
@@ -246,8 +253,21 @@ void GraphRelation::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Graph::mouseReleaseEvent(event);
 
-    if (isGrippedState() && droppedGraph()) {
-        lockDroppedGraph();
+    if (isGrippedState()) {
+        Grip::GripType gt = m_grips.at(m_currentGripIndex)->m_type;
+
+        // 先断开与targetGraph或sourceGraph的联系
+        if (gt == Grip::TARGET_GRIP && m_target) {
+            setTargetGraph(nullptr);
+        }
+        if (gt == Grip::SOURCE_GRIP && m_source) {
+            setSourceGraph(nullptr);
+        }
+
+        // 如果有新的droppedGraph，就连接到新的graph
+        if (droppedGraph()) {
+            lockDroppedGraph();
+        }
     }
 }
 
@@ -258,7 +278,7 @@ void GraphRelation::resize(const QSizeF &diff)
 
     switch ( g->m_type) {
     case Grip::SOURCE_GRIP:
-        setStartPoint(QPointF(p1().x() + diff.width(), p1().y() + diff.height()));
+        setStartPoint(QPointF(startPoint().x() + diff.width(), startPoint().y() + diff.height()));
         break;
     case Grip::TARGET_GRIP:
         m_p2.setX(m_p2.x() + diff.width());

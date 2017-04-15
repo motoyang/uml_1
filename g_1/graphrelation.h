@@ -9,8 +9,8 @@ class GraphRelation: public Graph
     QPointF m_p2;
 
     // 返回的都是scene坐标
-    QPointF p1() const;
-    QPointF p2() const;
+    QPointF startPoint() const;
+    QPointF endPoint() const;
 
     // p是scene坐标
     void setStartPoint(const QPointF& p);
