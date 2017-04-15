@@ -29,7 +29,13 @@ void GraphRelation::setStartPoint(const QPointF &p)
     setY(p.y());
 
     // 由于pos已经改变，要重新根据记录的p2赋值给m_p2
-    m_p2 = mapFromScene(old_p2);
+    setEndPoint(old_p2);
+}
+
+void GraphRelation::setEndPoint(const QPointF &p)
+{
+    m_p2 = mapFromScene(p);
+    updatePosition();
 }
 
 void GraphRelation::setDroppedGraph(const Graph *g)
@@ -45,21 +51,20 @@ void GraphRelation::setDroppedGraph(const Graph *g)
     }
 }
 
+Graph *GraphRelation::droppedGraph() const
+{
+    return m_dropped;
+}
+
 void GraphRelation::lockDroppedGraph()
 {
-    if (!isGrippedState() || !m_dropped) {
-        return;
-    }
-
     Grip::GripType gp = m_grips.at(m_currentGripIndex)->m_type;
     switch (gp) {
     case Grip::TARGET_GRIP:
-        m_target = m_dropped;
-        linkTargetGraph();
+        linkTargetGraph(droppedGraph());
         break;
     case Grip::SOURCE_GRIP:
-        m_source = m_dropped;
-        linkSourceGraph();
+        linkSourceGraph(droppedGraph());
         break;
     default:
         Q_ASSERT(false);
@@ -67,11 +72,13 @@ void GraphRelation::lockDroppedGraph()
     setDroppedGraph(nullptr);
 
     berthGripsAt();
-    setX(p1().x() + 0.00001);
+    updatePosition();
 }
 
-void GraphRelation::linkTargetGraph()
+void GraphRelation::linkTargetGraph(const Graph* g)
 {
+    setTargetGraph(g);
+
     if (m_source) {
         linkGraphs();
         return;
@@ -82,11 +89,13 @@ void GraphRelation::linkTargetGraph()
     bool bIntersected = linkedPointer(p1(), m_target, p);
     Q_ASSERT_X(bIntersected, "GraphRelation::linkTargetGraph()", "err");
 
-    m_p2 = mapFromScene(p);
+    setEndPoint(p);
 }
 
-void GraphRelation::linkSourceGraph()
+void GraphRelation::linkSourceGraph(const Graph* g)
 {
+    setSourceGraph(g);
+
     if (m_target) {
         linkGraphs();
         return;
@@ -99,6 +108,36 @@ void GraphRelation::linkSourceGraph()
 
     // 根据计算得出的交点，重新设置position
     setStartPoint(p);
+}
+
+void GraphRelation::setTargetGraph(const Graph *g)
+{
+    if (m_target == g) {
+        return;
+    }
+
+    // 如果原先有连接的graph，先与原graph断开
+    if (m_target) {
+        m_target->disconnectTarget(this);
+    }
+
+    m_target = const_cast<Graph*>(g);
+    m_target->connectTarget(this);
+}
+
+void GraphRelation::setSourceGraph(const Graph *g)
+{
+    if (m_source == g) {
+        return;
+    }
+
+    // 如果原先有连接的graph，先与原graph断开
+    if (m_source) {
+        m_source->disconnectSource(this);
+    }
+
+    m_source =  const_cast<Graph*>(g);
+    m_source->connectSource(this);
 }
 
 bool GraphRelation::linkedPointer(const QPointF &start, const Graph *g, QPointF& intersectedPoint)
@@ -196,14 +235,20 @@ void GraphRelation::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     drag->exec();
 */
 
-    lookupDroppedGraph(event->scenePos());
+    if (isGrippedState()) {
+        lookupDroppedGraph(event->scenePos());
+    }
+
     Graph::mouseMoveEvent(event);
 }
 
 void GraphRelation::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Graph::mouseReleaseEvent(event);
-    lockDroppedGraph();
+
+    if (isGrippedState() && droppedGraph()) {
+        lockDroppedGraph();
+    }
 }
 
 void GraphRelation::resize(const QSizeF &diff)
@@ -224,10 +269,7 @@ void GraphRelation::resize(const QSizeF &diff)
     }
 
     berthGripsAt();
-
-    setX(x() + 0.00001);
-    setY(y() + 0.00001);
-    //    update();
+    updatePosition();
 }
 
 bool GraphRelation::shouldBeenDropped(const QPointF &p)

@@ -8,21 +8,21 @@ class GraphClass: public Graph
     uml::Class m_c;
     QSizeF m_size, m_minSize;
     bool m_bDroppedVisible;
+    qreal m_nameXPos;
+    QList<GraphRelation*> m_sources, m_targets;
 
     QString m_name;
     QList<QString> m_operations;
     QList<QString> m_attributes;
-
-    qreal m_nameXPos;
 
     QSizeF getSize(const QString &s) const;
     QSizeF getSize(const QList<QString>& l) const;
     void init();
     void placeName();
     void drawDropped(QPainter* painter);
+    void relationsUpdate() const;
 
     virtual void resize(const QSizeF &diff) override;
-
 
 protected:
 
@@ -31,6 +31,7 @@ protected:
     virtual void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
     virtual void dragMoveEvent(QGraphicsSceneDragDropEvent *event) override;
     virtual void dropEvent(QGraphicsSceneDragDropEvent *event) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
     // from Graph
     virtual void createGrips() override;
@@ -46,6 +47,10 @@ public:
     virtual int type() const override;
     virtual bool shouldBeenDropped(const QPointF &p) override;
     virtual void setDroppedFlag(bool f) override;
+    virtual void connectTarget(const GraphRelation *r) override;
+    virtual void disconnectTarget(const GraphRelation* const g) override;
+    virtual void connectSource(const GraphRelation *r) override;
+    virtual void disconnectSource(const GraphRelation* const g) override;
 
 };
 

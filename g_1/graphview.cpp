@@ -38,4 +38,6 @@ GraphView::GraphView()
 
     auto r1 = new GraphRelation(QPoint(-100, -100), QPoint(50, 50));
     s0->addItem(r1);
+    auto r2 = new GraphRelation(QPoint(-100, 100), QPoint(50, 50));
+    s0->addItem(r2);
 }

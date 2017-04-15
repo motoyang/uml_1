@@ -1,5 +1,6 @@
 #include <QtWidgets>
 #include "defaultsettings.h"
+#include "graphrelation.h"
 #include "graph.h"
 
 //
@@ -219,6 +220,35 @@ QPointF Graph::centerPoint() const
 void Graph::setDroppedFlag(bool f)
 {
     Q_UNUSED(f);
+}
+
+void Graph::connectTarget(const GraphRelation *r)
+{
+    Q_UNUSED(r);
+    Q_ASSERT(false);
+}
+
+void Graph::disconnectTarget(const GraphRelation * const g)
+{
+    Q_UNUSED(g);
+    Q_ASSERT(false);
+}
+
+void Graph::connectSource(const GraphRelation *r)
+{
+    Q_UNUSED(r);
+    Q_ASSERT(false);
+}
+
+void Graph::disconnectSource(const GraphRelation * const g)
+{
+    Q_UNUSED(g);
+    Q_ASSERT(false);
+}
+
+void Graph::updatePosition()
+{
+    setX(x() + 0.000001);
 }
 
 void Graph::drawGrips(QPainter *painter) const

@@ -1,5 +1,6 @@
 #include <QtWidgets>
 #include "defaultsettings.h"
+#include "graphrelation.h"
 #include "graphclass.h"
 
 //
@@ -66,6 +67,16 @@ void GraphClass::drawDropped(QPainter *painter)
     }
 }
 
+void GraphClass::relationsUpdate() const
+{
+    foreach (GraphRelation* r, m_sources) {
+        r->linkSourceGraph(this);
+    }
+    foreach (GraphRelation* r, m_targets) {
+        r->linkTargetGraph(this);
+    }
+}
+
 void GraphClass::resize(const QSizeF &diff)
 {
     QSizeF szNew = m_size;
@@ -89,7 +100,7 @@ void GraphClass::resize(const QSizeF &diff)
 
     // 假装更新位置，强迫scene更新背景。否则右下角grip拖动缩小时有残影！！！
     if (!g->shouldChangeXPos() && !g->shouldChangeYPos()) {
-        setX(x() + 0.000001);
+        updatePosition();
     }
 }
 
@@ -102,6 +113,28 @@ void GraphClass::setDroppedFlag(bool f)
 {
     m_bDroppedVisible = f;
     update();
+}
+
+void GraphClass::connectTarget(const GraphRelation *r)
+{
+    m_targets.append(const_cast<GraphRelation*>(r));
+}
+
+void GraphClass::disconnectTarget(const GraphRelation* const g)
+{
+    bool b = m_targets.removeOne(const_cast<GraphRelation* const>(g));
+    Q_ASSERT_X(b, __FUNCTION__, "err");
+}
+
+void GraphClass::connectSource(const GraphRelation *r)
+{
+    m_sources.append(const_cast<GraphRelation*>(r));
+}
+
+void GraphClass::disconnectSource(const GraphRelation* const g)
+{
+    bool b = m_sources.removeOne(const_cast<GraphRelation* const>(g));
+    Q_ASSERT_X(b, __FUNCTION__, "err");
 }
 
 void GraphClass::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
@@ -122,6 +155,12 @@ void GraphClass::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 void GraphClass::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     qDebug() << "dropEvent" << event->dropAction();
+}
+
+void GraphClass::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    Graph::mouseMoveEvent(event);
+    relationsUpdate();
 }
 
 GraphClass::GraphClass(const QPointF &p, const QSizeF s, const QString& name)

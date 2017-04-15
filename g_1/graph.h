@@ -31,6 +31,8 @@ struct Grip {
 
 };
 
+class GraphRelation;
+
 class Graph: public QGraphicsItem
 {
     const int PEN_KEY = 1;
@@ -81,6 +83,12 @@ public:
     virtual int type() const override;
     virtual bool shouldBeenDropped(const QPointF& p) = 0;
     virtual void setDroppedFlag(bool f);
+    virtual void connectTarget(const GraphRelation *r);
+    virtual void disconnectTarget(const GraphRelation* const g);
+    virtual void connectSource(const GraphRelation *r);
+    virtual void disconnectSource(const GraphRelation* const g);
+
+    void updatePosition();
 
     QPen pen() const;
     void setPen(const QPen& p);

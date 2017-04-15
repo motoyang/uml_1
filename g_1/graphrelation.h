@@ -14,9 +14,11 @@ class GraphRelation: public Graph
 
     // p是scene坐标
     void setStartPoint(const QPointF& p);
+    void setEndPoint(const QPointF& p);
 
     Graph *m_source = nullptr, *m_target = nullptr, *m_dropped = nullptr;
     void setDroppedGraph(const Graph* g);
+    Graph *droppedGraph() const;
     void lockDroppedGraph();
     bool linkedPointer(const QPointF &start, const Graph* g, QPointF& intersectedPoint);
     bool linkGraphs();
@@ -51,8 +53,10 @@ public:
 
     virtual int type() const override;
 
-    void linkTargetGraph();
-    void linkSourceGraph();
+    void linkTargetGraph(const Graph* g);
+    void linkSourceGraph(const Graph* g);
+    void setTargetGraph(const Graph* g);
+    void setSourceGraph(const Graph* g);
 };
 
 #endif // GRAPHRELATION_H
