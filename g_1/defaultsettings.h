@@ -24,11 +24,13 @@ class Settings
     friend class Singleton<Settings>;
 
     QSizeF m_gripSize;
+    QSizeF m_droppedSize;
     TextPadding m_textPadding;
 
 public:
     const QSizeF &sizeOfGrip() const;
     const TextPadding &textPadding() const;
+    const QSizeF &sizeOfDropped() const;
 
 private:
     Settings();

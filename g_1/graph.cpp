@@ -296,6 +296,12 @@ bool Graph::isGrippedState() const
     return m_currentGripIndex < m_grips.size();
 }
 
+void Graph::droppedPoint(const QPointF &p)
+{
+    Q_UNUSED(p);
+    Q_ASSERT(false);
+}
+
 void Graph::focusInEvent(QFocusEvent *event)
 {
     setAcceptHoverEvents(true);

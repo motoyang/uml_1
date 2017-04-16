@@ -62,9 +62,17 @@ void GraphClass::placeName()
 
 void GraphClass::drawDropped(QPainter *painter)
 {
-    if (m_bDroppedVisible) {
-        painter->drawEllipse(boundingRect());
+    if (!m_bDroppedVisible) {
+        return;
     }
+
+    qreal x = m_droppedPoint.x() * m_size.width();
+    qreal y = m_droppedPoint.y() * m_size.height();
+
+    const QSizeF &droppedSize = Singleton<Settings>::instance().sizeOfDropped();
+    QRectF r(x - droppedSize.width() / 2, y - droppedSize.height() / 2,
+             droppedSize.width(), droppedSize.height());
+    painter->drawEllipse(r);
 }
 
 void GraphClass::relationsUpdate() const
@@ -112,6 +120,45 @@ bool GraphClass::shouldBeenDropped(const QPointF &p)
 void GraphClass::setDroppedFlag(bool f)
 {
     m_bDroppedVisible = f;
+    update();
+}
+
+void GraphClass::droppedPoint(const QPointF &p)
+{
+    qreal x = p.x() / m_size.width();
+    qreal y = p.y() / m_size.height();
+
+    if ((x > 0.33 && x < 0.66)
+     && (y > 0.33 && y < 0.66)) {
+        // 中心点
+        m_droppedPoint.setX(0.5);
+        m_droppedPoint.setY(0.5);
+    } else {
+        // 四个边
+        if (x > y) {
+            // 上边和右边
+            if (x + y > 1.0) {
+                // 右边
+                m_droppedPoint.setX(1.0);
+                m_droppedPoint.setY(y);
+            } else {
+                // 上边
+                m_droppedPoint.setX(x);
+                m_droppedPoint.setY(0.0);
+            }
+        } else {
+            // 下边和左边
+            if (x + y < 1.0) {
+                // 左边
+                m_droppedPoint.setX(0.0);
+                m_droppedPoint.setY(y);
+            } else {
+                // 下边
+                m_droppedPoint.setX(x);
+                m_droppedPoint.setY(1.0);
+            }
+        }
+    }
     update();
 }
 

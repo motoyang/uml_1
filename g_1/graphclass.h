@@ -10,6 +10,7 @@ class GraphClass: public Graph
     bool m_bDroppedVisible;
     qreal m_nameXPos;
     QList<GraphRelation*> m_sources, m_targets;
+    QPointF m_droppedPoint;
 
     QString m_name;
     QList<QString> m_operations;
@@ -51,6 +52,7 @@ public:
     virtual void disconnectTarget(const GraphRelation* const g) override;
     virtual void connectSource(const GraphRelation *r) override;
     virtual void disconnectSource(const GraphRelation* const g) override;
+    virtual void droppedPoint(const QPointF &p) override;
 
 };
 

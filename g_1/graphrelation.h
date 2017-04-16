@@ -17,7 +17,7 @@ class GraphRelation: public Graph
     void setEndPoint(const QPointF& p);
 
     Graph *m_source = nullptr, *m_target = nullptr, *m_dropped = nullptr;
-    void setDroppedGraph(const Graph* g);
+    void setDroppedGraph(const Graph* g, const QPointF &p);
     Graph *droppedGraph() const;
     void lockDroppedGraph();
     bool linkedPointer(const QPointF &start, const Graph* g, QPointF& intersectedPoint);

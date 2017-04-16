@@ -87,6 +87,7 @@ public:
     virtual void disconnectTarget(const GraphRelation* const g);
     virtual void connectSource(const GraphRelation *r);
     virtual void disconnectSource(const GraphRelation* const g);
+    virtual void droppedPoint(const QPointF &p);
 
     void updatePosition();
 

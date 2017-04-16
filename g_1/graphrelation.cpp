@@ -38,16 +38,20 @@ void GraphRelation::setEndPoint(const QPointF &p)
     updatePosition();
 }
 
-void GraphRelation::setDroppedGraph(const Graph *g)
+void GraphRelation::setDroppedGraph(const Graph *g, const QPointF &p)
 {
-    if (g != m_dropped) {
-        if (m_dropped) {
-            m_dropped->setDroppedFlag(false);
-        }
-        m_dropped = const_cast<Graph*>(g);
-        if (m_dropped) {
-            m_dropped->setDroppedFlag(true);
-        }
+    if (g && (g == m_dropped)) {
+        m_dropped->droppedPoint(m_dropped->mapFromScene(p));
+        return;
+    }
+
+    if (m_dropped) {
+        m_dropped->setDroppedFlag(false);
+    }
+
+    m_dropped = const_cast<Graph*>(g);
+    if (m_dropped) {
+        m_dropped->setDroppedFlag(true);
     }
 }
 
@@ -69,7 +73,7 @@ void GraphRelation::lockDroppedGraph()
     default:
         Q_ASSERT(false);
     }
-    setDroppedGraph(nullptr);
+    setDroppedGraph(nullptr, QPointF(0, 0));
 
     berthGripsAt();
     updatePosition();
@@ -192,7 +196,7 @@ void GraphRelation::lookupDroppedGraph(const QPointF &p)
         }
     }
 
-    setDroppedGraph(dropped);
+    setDroppedGraph(dropped, p);
 }
 
 void GraphRelation::createGrips()
