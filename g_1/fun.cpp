@@ -1,6 +1,15 @@
 #include <QPainterPath>
 #include <QtWidgets>
 
+bool isEqual(qreal l, qreal r)
+{
+    bool b = false;
+    if (std::fabs(l - r) < 0.000001) {
+        b = true;
+    }
+    return b;
+}
+
 /*
 // 存放一些常用的函数或者一些常用功能的实现算法;
 

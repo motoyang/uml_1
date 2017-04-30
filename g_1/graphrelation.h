@@ -47,11 +47,10 @@ public:
         m_p2 = mapFromScene(p2);
     }
 
+    virtual int type() const override;
     virtual QRectF boundingRect() const override;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     virtual QPainterPath shape() const override;
-
-    virtual int type() const override;
 
     void linkTargetGraph(const Graph* g);
     void linkSourceGraph(const Graph* g);

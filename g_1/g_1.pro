@@ -35,7 +35,10 @@ SOURCES += main.cpp\
     intersected.cpp \
     graphclass.cpp \
     graphrelation.cpp \
-    defaultsettings.cpp
+    defaultsettings.cpp \
+    visualentity.cpp \
+    line.cpp \
+    brokenline.cpp
 
 HEADERS  += widget.h \
     graph.h \
@@ -46,4 +49,8 @@ HEADERS  += widget.h \
     intersected.h \
     graphrelation.h \
     singleton.h \
-    defaultsettings.h
+    defaultsettings.h \
+    visualentity.h \
+    line.h \
+    brokenline.h \
+    fun.h

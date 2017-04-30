@@ -1,6 +1,7 @@
 #ifndef GRAPHCLASS_H
 #define GRAPHCLASS_H
 
+#include "entity.h"
 #include "graph.h"
 
 class GraphClass: public Graph
@@ -9,7 +10,8 @@ class GraphClass: public Graph
     QSizeF m_size, m_minSize;
     bool m_bDroppedVisible;
     qreal m_nameXPos;
-    QList<GraphRelation*> m_sources, m_targets;
+    QList<GraphRelation*> m_s, m_t;
+    QMap<const Line*, QPointF> m_sources, m_targets;
     QPointF m_droppedPoint;
 
     QString m_name;
@@ -28,10 +30,6 @@ class GraphClass: public Graph
 protected:
 
     // drag and drop event
-    virtual void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
-    virtual void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
-    virtual void dragMoveEvent(QGraphicsSceneDragDropEvent *event) override;
-    virtual void dropEvent(QGraphicsSceneDragDropEvent *event) override;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
     // from Graph
@@ -46,13 +44,22 @@ public:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     virtual int type() const override;
-    virtual bool shouldBeenDropped(const QPointF &p) override;
     virtual void setDroppedFlag(bool f) override;
     virtual void connectTarget(const GraphRelation *r) override;
     virtual void disconnectTarget(const GraphRelation* const g) override;
     virtual void connectSource(const GraphRelation *r) override;
     virtual void disconnectSource(const GraphRelation* const g) override;
-    virtual void droppedPoint(const QPointF &p) override;
+
+    virtual void connectTarget(const Line *r) override;
+    virtual void disconnectTarget(const Line* const g) override;
+    virtual void connectSource(const Line *r) override;
+    virtual void disconnectSource(const Line* const g) override;
+
+    virtual void showDroppedPoint(const QPointF &p) override;
+//    virtual QPointF droppedPoint(const Line* l, bool &bCenter) const override;
+    virtual bool sourceDroppedPoint(const Line* l, QPointF &p) const override;
+    virtual bool targetDroppedPoint(const Line* l, QPointF &p) const override;
+
 
 };
 

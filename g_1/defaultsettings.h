@@ -25,12 +25,16 @@ class Settings
 
     QSizeF m_gripSize;
     QSizeF m_droppedSize;
+    QSizeF m_extendedSize;
+    qreal m_shapeWidth;
     TextPadding m_textPadding;
 
 public:
     const QSizeF &sizeOfGrip() const;
-    const TextPadding &textPadding() const;
     const QSizeF &sizeOfDropped() const;
+    const QSizeF &sizeOfExtended() const;
+    qreal widthOfShape() const;
+    const TextPadding &textPadding() const;
 
 private:
     Settings();

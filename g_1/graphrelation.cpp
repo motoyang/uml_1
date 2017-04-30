@@ -41,7 +41,7 @@ void GraphRelation::setEndPoint(const QPointF &p)
 void GraphRelation::setDroppedGraph(const Graph *g, const QPointF &p)
 {
     if (g && (g == m_dropped)) {
-        m_dropped->droppedPoint(m_dropped->mapFromScene(p));
+        m_dropped->showDroppedPoint(m_dropped->mapFromScene(p));
         return;
     }
 
@@ -152,25 +152,28 @@ void GraphRelation::setSourceGraph(const Graph *g)
 
 bool GraphRelation::linkedPointer(const QPointF &start, const Graph *g, QPointF& intersectedPoint)
 {
-    // scene坐标系中的line
-    QLineF l(start, g->mapToScene(g->centerPoint()));
+/*    // scene坐标系中的line
+    bool bCenter = false;
+    QLineF l(start, g->mapToScene(g->droppedPoint(bCenter)));
 
     // 计算从p1()到目标graph的交点，返回的是scene坐标点
     bool bIntersected = IntersectedPoint(l, g->mapToScene(g->shape()), intersectedPoint);
     return bIntersected;
+    */
+    return true;
 }
-
 bool GraphRelation::linkGraphs()
 {
+    /*
     Q_ASSERT(m_target);
     Q_ASSERT(m_source);
 
     QPointF p1, p2;
-    QLineF l1(m_source->mapToScene(m_source->centerPoint()), m_target->mapToScene(m_target->centerPoint()));
+    QLineF l1(m_source->mapToScene(m_source->droppedPoint()), m_target->mapToScene(m_target->droppedPoint()));
     // 计算从source到target graph的交点，返回的是scene坐标点
     bool b1 = IntersectedPoint(l1, m_target->mapToScene(m_target->shape()), p2);
 
-    QLineF l2(m_target->mapToScene(m_target->centerPoint()), m_source->mapToScene(m_source->centerPoint()));
+    QLineF l2(m_target->mapToScene(m_target->droppedPoint()), m_source->mapToScene(m_source->droppedPoint()));
     // 计算从target到source graph的交点，返回的是scene坐标点
     bool b2 = IntersectedPoint(l2, m_source->mapToScene(m_source->shape()), p1);
 
@@ -180,8 +183,9 @@ bool GraphRelation::linkGraphs()
 //    m_p2 = mapFromScene(p2);
 
     return b1 && b2;
+*/
+    return true;
 }
-
 void GraphRelation::lookupDroppedGraph(const QPointF &p)
 {
     QList<QGraphicsItem*> l = scene()->items(p);
@@ -190,7 +194,7 @@ void GraphRelation::lookupDroppedGraph(const QPointF &p)
     Graph* dropped = nullptr;
     foreach (QGraphicsItem* i, l) {
         Graph* g = qgraphicsitem_cast<Graph*>(i);
-        if (g->shouldBeenDropped(p)) {
+        if (g && g->shouldBeenDropped(p)) {
             dropped = g;
             break;
         }
@@ -303,6 +307,11 @@ bool GraphRelation::shouldBeenDropped(const QPointF &p)
     return false;
 }
 
+int GraphRelation::type() const
+{
+    return GraphRelationType;
+}
+
 QRectF GraphRelation::boundingRect() const
 {
     QRectF r(origin(), m_p2);
@@ -333,7 +342,7 @@ void GraphRelation::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 
 QPainterPath GraphRelation::shape() const
 {
-    qreal halfGrip = Singleton<Settings>::instance().sizeOfGrip().width() / 2;
+/*    qreal halfGrip = Singleton<Settings>::instance().sizeOfGrip().width() / 2;
 
     QList<QPointF> points;
     QLineF line(origin(), m_p2);
@@ -366,11 +375,14 @@ QPainterPath GraphRelation::shape() const
             pp.lineTo(*p);
         }
     }
+*/
+    QPainterPath pp2;
+    pp2.moveTo(origin());
+    pp2.lineTo(m_p2);
 
-    return pp;
+    QPainterPathStroker pps;
+    pps.setWidth(Singleton<Settings>::instance().sizeOfGrip().width());
+    return pps.createStroke(pp2);
 }
 
-int GraphRelation::type() const
-{
-    return GraphRelationType;
-}
+

@@ -10,8 +10,8 @@ using namespace std;
 void print_singleton()
 {
     cout << __FUNCTION__<< " output--------------------------------------------" << endl;
-    Singleton<A>::instance().opA1();
-    A2::instance().opA2();
+//    Singleton<A>::instance().opA1();
+//    A2::instance().opA2();
 }
 
 void print_interface(const uml::Interface& i)

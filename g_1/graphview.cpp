@@ -2,6 +2,7 @@
 #include "graph.h"
 #include "graphclass.h"
 #include "graphrelation.h"
+#include "brokenline.h"
 
 GraphView::GraphView()
 {
@@ -36,8 +37,13 @@ GraphView::GraphView()
     g3->setPen(QPen(QBrush(Qt::black), 3));
     s0->addItem(g3);
 
-    auto r1 = new GraphRelation(QPoint(-100, -100), QPoint(50, 50));
-    s0->addItem(r1);
-    auto r2 = new GraphRelation(QPoint(-100, 100), QPoint(50, 50));
-    s0->addItem(r2);
+//    auto r1 = new GraphRelation(QPoint(-100, -100), QPoint(50, 50));
+//    s0->addItem(r1);
+//    auto r2 = new GraphRelation(QPoint(-100, 100), QPoint(50, 50));
+//    s0->addItem(r2);
+
+    auto bl1 = new BrokenLine(QPointF(-200, -100));
+    s0->addItem(bl1);
+    auto bl2 = new BrokenLine(QPointF(-100, -50));
+    s0->addItem(bl2);
 }

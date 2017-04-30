@@ -1,6 +1,8 @@
 #include <QtWidgets>
 #include "defaultsettings.h"
+#include "fun.h"
 #include "graphrelation.h"
+#include "line.h"
 #include "graphclass.h"
 
 //
@@ -77,11 +79,21 @@ void GraphClass::drawDropped(QPainter *painter)
 
 void GraphClass::relationsUpdate() const
 {
-    foreach (GraphRelation* r, m_sources) {
+    foreach (GraphRelation* r, m_s) {
         r->linkSourceGraph(this);
     }
-    foreach (GraphRelation* r, m_targets) {
+    foreach (GraphRelation* r, m_t) {
         r->linkTargetGraph(this);
+    }
+
+//    for (auto i = m_sources.begin(); i != m_sources.end(); ++i) {
+//        i
+//    }
+    foreach (auto r, m_sources.keys()) {
+        const_cast<Line*>(r)->linkSourceGraph(this);
+    }
+    foreach (auto r, m_targets.keys()) {
+        const_cast<Line*>(r)->linkTargetGraph(this);
     }
 }
 
@@ -112,18 +124,13 @@ void GraphClass::resize(const QSizeF &diff)
     }
 }
 
-bool GraphClass::shouldBeenDropped(const QPointF &p)
-{
-    return shape().contains(mapFromScene(p));
-}
-
 void GraphClass::setDroppedFlag(bool f)
 {
     m_bDroppedVisible = f;
     update();
 }
 
-void GraphClass::droppedPoint(const QPointF &p)
+void GraphClass::showDroppedPoint(const QPointF &p)
 {
     qreal x = p.x() / m_size.width();
     qreal y = p.y() / m_size.height();
@@ -161,47 +168,103 @@ void GraphClass::droppedPoint(const QPointF &p)
     }
     update();
 }
+/*
+QPointF GraphClass::droppedPoint(const Line* l, bool &bCenter) const
+{
+    QPointF p = m
+    if (m_droppedPoint.x() > 0.49 && m_droppedPoint.x() < 0.51
+            && m_droppedPoint.y() > 0.49 && m_droppedPoint.y() < 0.51) {
+        bCenter = true;
+    } else {
+        bCenter = false;
+    }
+
+    qreal x = m_droppedPoint.x() * m_size.width();
+    qreal y = m_droppedPoint.y() * m_size.height();
+
+    return QPointF(x, y);
+}
+*/
+bool GraphClass::sourceDroppedPoint(const Line *l, QPointF &p) const
+{
+    Q_ASSERT(m_sources.find(l) != m_sources.end());
+
+    bool b = false;
+    p = m_sources.value(l);
+    if (isEqual(p.x(), 0.5) && isEqual(p.y(), 0.5)) {
+        b = true;
+    }
+
+    p.rx() *= m_size.width();
+    p.ry() *= m_size.height();
+    return b;
+}
+
+bool GraphClass::targetDroppedPoint(const Line *l, QPointF &p) const
+{
+    Q_ASSERT(m_targets.find(l) != m_targets.end());
+
+    bool b = false;
+    p = m_targets.value(l);
+    if (isEqual(p.x(), 0.5) && isEqual(p.y(), 0.5)) {
+        b = true;
+    }
+
+    p.rx() *= m_size.width();
+    p.ry() *= m_size.height();
+    return b;
+}
 
 void GraphClass::connectTarget(const GraphRelation *r)
 {
-    m_targets.append(const_cast<GraphRelation*>(r));
+    m_t.append(const_cast<GraphRelation*>(r));
 }
 
 void GraphClass::disconnectTarget(const GraphRelation* const g)
 {
-    bool b = m_targets.removeOne(const_cast<GraphRelation* const>(g));
+    bool b = m_t.removeOne(const_cast<GraphRelation* const>(g));
     Q_ASSERT_X(b, __FUNCTION__, "err");
 }
 
 void GraphClass::connectSource(const GraphRelation *r)
 {
-    m_sources.append(const_cast<GraphRelation*>(r));
+    m_s.append(const_cast<GraphRelation*>(r));
 }
 
 void GraphClass::disconnectSource(const GraphRelation* const g)
 {
-    bool b = m_sources.removeOne(const_cast<GraphRelation* const>(g));
+    bool b = m_s.removeOne(const_cast<GraphRelation* const>(g));
     Q_ASSERT_X(b, __FUNCTION__, "err");
 }
 
-void GraphClass::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+void GraphClass::connectTarget(const Line *r)
 {
-    qDebug() << "dragEnterEvent" << event->dropAction();
+    Q_ASSERT(m_targets.find(r) == m_targets.end());
+
+    m_targets[r] = m_droppedPoint;
+//    m_targets.append(const_cast<Line*>(r));
 }
 
-void GraphClass::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+void GraphClass::disconnectTarget(const Line* const g)
 {
-    qDebug() << "dragLeaveEvent" << event->dropAction();
+    bool b = m_targets.remove(g);
+//    bool b = m_targets.removeOne(const_cast<Line* const>(g));
+    Q_ASSERT_X(b, __FUNCTION__, "err");
 }
 
-void GraphClass::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
+void GraphClass::connectSource(const Line *r)
 {
-    qDebug() << "dragMoveEvent" << event->dropAction();
+    Q_ASSERT(m_sources.find(r) == m_sources.end());
+
+    m_sources[r] = m_droppedPoint;
+//    m_sources.append(const_cast<Line*>(r));
 }
 
-void GraphClass::dropEvent(QGraphicsSceneDragDropEvent *event)
+void GraphClass::disconnectSource(const Line* const g)
 {
-    qDebug() << "dropEvent" << event->dropAction();
+    bool b = m_sources.remove(g);
+//    bool b = m_sources.removeOne(const_cast<Line* const>(g));
+    Q_ASSERT_X(b, __FUNCTION__, "err");
 }
 
 void GraphClass::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
