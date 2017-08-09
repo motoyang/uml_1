@@ -11,12 +11,15 @@ class BrokenLine: public Line
 
     QPainterPath path() const;
     bool simplify(int index);
+    void brokenAt(const QPointF &pos);
 
 protected:
     // grip相关的操作，子类可以override或实现这些操作。
     virtual void createGrips() override;
     virtual void berthGripsAt() override;
 
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+//    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
     // 子类要实现

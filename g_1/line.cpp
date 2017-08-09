@@ -171,12 +171,12 @@ bool Line::linkGraphs2()
 
     return true;
 }
-
+/*
 void Line::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     BaseClass::mousePressEvent(event);
 }
-
+*/
 void Line::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (isGrippedState()) {

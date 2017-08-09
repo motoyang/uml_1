@@ -23,7 +23,7 @@ class Line: public VisualEntity
 protected:
     void lookupDroppedGraph(const QPointF& p);
 
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+//    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 

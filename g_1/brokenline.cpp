@@ -39,7 +39,7 @@ bool BrokenLine::simplify(int index)
     QLineF l2(*p, *p2);
 
     bool b = false;
-    if ((l1.length() + l2.length()) < (l.length() * 1.00005)) {
+    if ((l1.length() + l2.length()) < (l.length() * 1.005)) {
         m_points.removeAt(index);
         b = true;
 
@@ -50,6 +50,38 @@ bool BrokenLine::simplify(int index)
     }
 
     return b;
+}
+
+void BrokenLine::brokenAt(const QPointF &pos)
+{
+    QPointF p1, p2;
+    for (int i = 0; i < m_points.size(); ++i) {
+        if (i == 0) {
+            p2 = *m_points.at(i);
+            continue;
+        }
+        p1 = p2;
+        p2 = *m_points.at(i);
+
+        QPainterPath pp;
+        pp.moveTo(p1);
+        pp.lineTo(p2);
+
+        QPainterPathStroker pps;
+        pps.setWidth(Singleton<Settings>::instance().widthOfShape());
+
+        QPainterPath pp2 = pps.createStroke(pp);
+        if (pp2.contains(pos)) {
+            m_points.insert(i, QSharedPointer<QPointF>::create(pos));
+            removeGrips();
+            createGrips();
+            berthGripsAt();
+            updatePosition();
+            hoverOnGrip(pos);
+
+            break;
+        }
+    }
 }
 
 void BrokenLine::createGrips()
@@ -83,6 +115,21 @@ void BrokenLine::berthGripsAt()
     }
 }
 
+void BrokenLine::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (isLocked() && !isGrippedState()) {
+        QPointF pos = event->pos();
+        brokenAt(pos);
+    }
+
+    BaseClass::mousePressEvent(event);
+}
+/*
+void BrokenLine::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    BaseClass::mouseMoveEvent(event);
+}
+*/
 void BrokenLine::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     if (isGrippedState()) {
