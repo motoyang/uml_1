@@ -25,11 +25,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    ve2.cpp \
+    defaultsettings.cpp \
+    graph.cpp \
+    graphclass.cpp \
+    entity.cpp \
+    graphview.cpp \
+    link.cpp \
+    intersected.cpp \
+    fun.cpp \
+    brokenline.cpp
 
 HEADERS += \
         mainwindow.h \
-    precompiled.h
+    precompiled.h \
+    ve2.h \
+    defaultsettings.h \
+    singleton.h \
+    graph.h \
+    graphclass.h \
+    entity.h \
+    graphview.h \
+    link.h \
+    intersected.h \
+    fun.h \
+    brokenline.h
 
 FORMS += \
         mainwindow.ui

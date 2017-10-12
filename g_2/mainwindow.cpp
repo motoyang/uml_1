@@ -1,3 +1,4 @@
+#include "graphview.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -7,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    createScene();
+    createScene2();
 }
 
 MainWindow::~MainWindow()
@@ -43,4 +44,10 @@ void MainWindow::createScene()
     view->setScene(scene);
     view->scale(ppi/dpi, ppi/dpi);
     setCentralWidget(view);
+}
+
+void MainWindow::createScene2()
+{
+    auto v = new GraphView();
+    setCentralWidget(v);
 }

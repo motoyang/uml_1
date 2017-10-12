@@ -16,6 +16,7 @@ public:
     ~MainWindow();
 
     void createScene();
+    void createScene2();
 
 private:
     Ui::MainWindow *ui;
